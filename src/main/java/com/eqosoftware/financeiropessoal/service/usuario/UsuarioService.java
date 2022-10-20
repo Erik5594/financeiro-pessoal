@@ -46,6 +46,7 @@ public class UsuarioService {
         Usuario usuario = usuarioMapper.toEntity(usuarioDto);
         usuario.setAtivo(true);
         usuario.setBloqueado(false);
+        usuario.setCreatedBy("system");
         usuario.setGrupoAcesso(grupoAcessoRepository.findById(1l).orElse(null));
         return usuario;
     }
