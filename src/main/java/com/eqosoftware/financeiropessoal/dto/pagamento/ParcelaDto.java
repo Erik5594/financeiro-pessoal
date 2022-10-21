@@ -8,7 +8,7 @@ import java.time.LocalDate;
  * Created by erik on 01/04/2022.
  */
 @Data
-public class Parcela {
+public class ParcelaDto {
 
     private int numero;
     private Double valor;

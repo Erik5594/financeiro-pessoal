@@ -1,7 +1,7 @@
 package com.eqosoftware.financeiropessoal.dto.despesa;
 
 import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
-import com.eqosoftware.financeiropessoal.dto.pagamento.Pagamento;
+import com.eqosoftware.financeiropessoal.dto.pagamento.PagamentoDto;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -17,7 +17,6 @@ public class DespesaDto {
 
     private UUID id;
     private LocalDate dataLancamento;
-    private LocalDate dataGeracao;
     private LocalDate mesCompetencia;
     private String descricao;
     private String observacao;
@@ -25,6 +24,6 @@ public class DespesaDto {
     private CategoriaDto categoria;
     private Situacao situacao;
     private LocalDate dataVencimento;
-    private List<Pagamento> pagamentos;
+    private List<PagamentoDto> pagamentos;
 
 }

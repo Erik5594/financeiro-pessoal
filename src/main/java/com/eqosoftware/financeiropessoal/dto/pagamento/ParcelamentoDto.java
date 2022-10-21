@@ -10,10 +10,11 @@ import java.util.List;
  */
 
 @Data
-public class Parcelamento {
+public class ParcelamentoDto {
 
     private int qtdeParcelas;
     private LocalDate vencimentoPrimeira;
     private LocalDate vencimentoUltima;
-    private List<Parcela> parcelas;
+    private List<ParcelaDto> parcelas;
+
 }

@@ -11,6 +11,9 @@ public enum FormaPagamento {
     DINHEIRO("Dinheiro"),
     PIX("PIX"),
     CHEQUE("Cheque"),
+    TED("TED"),
+    DOC("DOC"),
+    CREDIARIO("Crediário"),
     OUTROS("Outros");
 
     private String descricao;
