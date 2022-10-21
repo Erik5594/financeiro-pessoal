@@ -1,5 +1,6 @@
 package com.eqosoftware.financeiropessoal.dto.despesa;
 
+import com.eqosoftware.financeiropessoal.dto.BaseDto;
 import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.pagamento.PagamentoDto;
 import lombok.Data;
@@ -13,9 +14,8 @@ import java.util.UUID;
  */
 
 @Data
-public class DespesaDto {
+public class DespesaDto extends BaseDto {
 
-    private UUID id;
     private LocalDate dataLancamento;
     private LocalDate mesCompetencia;
     private String descricao;

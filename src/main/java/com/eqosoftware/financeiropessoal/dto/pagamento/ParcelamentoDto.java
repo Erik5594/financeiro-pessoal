@@ -1,5 +1,6 @@
 package com.eqosoftware.financeiropessoal.dto.pagamento;
 
+import com.eqosoftware.financeiropessoal.dto.BaseDto;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -10,7 +11,7 @@ import java.util.List;
  */
 
 @Data
-public class ParcelamentoDto {
+public class ParcelamentoDto extends BaseDto {
 
     private int qtdeParcelas;
     private LocalDate vencimentoPrimeira;

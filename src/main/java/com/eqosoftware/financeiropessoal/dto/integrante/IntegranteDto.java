@@ -1,13 +1,13 @@
 package com.eqosoftware.financeiropessoal.dto.integrante;
 
+import com.eqosoftware.financeiropessoal.dto.BaseDto;
 import lombok.Data;
 
 import java.util.UUID;
 
 @Data
-public class IntegranteDto {
+public class IntegranteDto extends BaseDto {
 
-    private UUID id;
     private UUID usuarioId;
     private String nome;
     private TipoIntegrante tipoIntegrante;

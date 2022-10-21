@@ -1,5 +1,6 @@
 package com.eqosoftware.financeiropessoal.dto.categoria;
 
+import com.eqosoftware.financeiropessoal.dto.BaseDto;
 import lombok.Data;
 
 import java.util.List;
@@ -10,9 +11,8 @@ import java.util.UUID;
  */
 
 @Data
-public class CategoriaDto {
+public class CategoriaDto extends BaseDto {
 
-    private UUID id;
     private String nome;
     private String descricao;
     private NaturezaDto natureza;

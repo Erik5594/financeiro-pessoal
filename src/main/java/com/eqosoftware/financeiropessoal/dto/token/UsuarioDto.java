@@ -1,5 +1,6 @@
 package com.eqosoftware.financeiropessoal.dto.token;
 
+import com.eqosoftware.financeiropessoal.dto.BaseDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
@@ -10,9 +11,8 @@ import java.util.UUID;
  */
 
 @Data
-public class UsuarioDto {
+public class UsuarioDto extends BaseDto {
 
-    private UUID id;
     private String nome;
     private String username;
     private String email;
