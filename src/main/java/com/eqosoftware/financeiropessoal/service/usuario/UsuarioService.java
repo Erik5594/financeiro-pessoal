@@ -63,4 +63,8 @@ public class UsuarioService {
                 .map(grupoAcessoMapper::toDto).collect(Collectors.toList());
     }
 
+    public List<UsuarioDto> listarTodos(){
+        return usuarioMapper.toDto(usuarioRepository.findAll());
+    }
+
 }

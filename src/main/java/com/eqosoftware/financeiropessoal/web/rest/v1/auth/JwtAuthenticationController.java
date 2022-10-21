@@ -49,6 +49,12 @@ public class JwtAuthenticationController {
         return ResponseEntity.ok(usuario);
     }
 
+    @GetMapping("/usuarios")
+    public ResponseEntity<?> listar() {
+        List<UsuarioDto> usuarios = usuarioService.listarTodos();
+        return ResponseEntity.ok(usuarios);
+    }
+
     @GetMapping(value = "/role")
     public ResponseEntity<?> listarRoles() {
         List<GrupoAcessoDto> gruposAcesso = usuarioService.listarGrupoAcesso();
