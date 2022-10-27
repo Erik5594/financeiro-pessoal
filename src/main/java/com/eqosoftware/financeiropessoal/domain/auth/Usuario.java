@@ -38,7 +38,7 @@ public class Usuario extends RecoverableEntity {
     @Column(nullable = false)
     private boolean bloqueado;
 
-    @JoinColumn(name = "grupo_acesso_id")
+    @JoinColumn(name = "grupo_acesso_id", nullable = false)
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private GrupoAcesso grupoAcesso;
 

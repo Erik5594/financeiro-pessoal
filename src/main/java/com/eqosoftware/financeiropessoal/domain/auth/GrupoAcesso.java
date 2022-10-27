@@ -31,7 +31,7 @@ public class GrupoAcesso extends AuditableEntity {
     private boolean acessoCompleto;
 
     @ElementCollection
-    @CollectionTable(name = "grupo_acesso_roles", joinColumns = @JoinColumn(name = "id"))
+    @CollectionTable(name = "grupo_acesso_roles", joinColumns = @JoinColumn(name = "id_grupo_acesso"))
     @Column(name = "role")
     private List<String> roles;
 

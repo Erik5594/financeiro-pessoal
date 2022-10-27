@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by erik on 28/01/2022.
@@ -28,6 +29,17 @@ public class CategoriaController {
     @GetMapping
     public ResponseEntity<List<CategoriaDto>> listar() {
         return ResponseEntity.ok(categoriaService.listar());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoriaDto> buscar(@PathVariable String id) {
+        return ResponseEntity.ok(categoriaService.buscar(UUID.fromString(id)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable String id) {
+        categoriaService.deletar(UUID.fromString(id));
+        return ResponseEntity.ok().build();
     }
 
 }

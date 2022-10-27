@@ -38,7 +38,6 @@ public class Categoria extends BaseEntity {
     private Categoria categoriaPai;
 
     @OneToMany(mappedBy = "categoriaPai", cascade = { CascadeType.ALL }, orphanRemoval = true)
-    @Where(clause = "deleted IS NULL")
     private List<Categoria> categoriasFilha;
 
 }
