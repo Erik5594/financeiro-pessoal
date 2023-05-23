@@ -1,9 +1,8 @@
 package com.eqosoftware.financeiropessoal.domain.common;
 
+import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.envers.Audited;
 
-import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 import java.util.UUID;

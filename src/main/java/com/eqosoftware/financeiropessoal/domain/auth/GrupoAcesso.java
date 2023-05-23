@@ -1,14 +1,12 @@
 package com.eqosoftware.financeiropessoal.domain.auth;
 
 import com.eqosoftware.financeiropessoal.domain.common.AuditableEntity;
-import com.eqosoftware.financeiropessoal.domain.common.BaseEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.envers.Audited;
 
-import javax.persistence.*;
 import java.util.List;
 
 /**
@@ -21,7 +19,6 @@ import java.util.List;
 @Entity
 @DynamicUpdate
 @Table
-@Audited
 public class GrupoAcesso extends AuditableEntity {
 
     @Column(nullable = false)

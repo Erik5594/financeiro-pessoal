@@ -1,11 +1,10 @@
 package com.eqosoftware.financeiropessoal.domain.common;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.envers.Audited;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
 import java.time.Instant;
 
 /**
@@ -15,7 +14,6 @@ import java.time.Instant;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @MappedSuperclass
-@Audited
 public abstract class RecoverableEntity extends AuditableEntity {
 
     private static final long serialVersionUID = 1L;

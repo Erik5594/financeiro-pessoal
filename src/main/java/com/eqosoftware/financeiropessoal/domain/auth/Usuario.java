@@ -1,13 +1,11 @@
 package com.eqosoftware.financeiropessoal.domain.auth;
 
-import com.eqosoftware.financeiropessoal.domain.common.BaseEntity;
 import com.eqosoftware.financeiropessoal.domain.common.RecoverableEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
-
-import javax.persistence.*;
 
 /**
  * Created by erik on 28/01/2022.

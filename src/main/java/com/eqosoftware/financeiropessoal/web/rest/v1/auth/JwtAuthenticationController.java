@@ -8,6 +8,7 @@ import com.eqosoftware.financeiropessoal.dto.grupoacesso.GrupoAcessoDto;
 import com.eqosoftware.financeiropessoal.dto.token.JwtResponseDto;
 import com.eqosoftware.financeiropessoal.dto.token.UsuarioDto;
 import com.eqosoftware.financeiropessoal.service.usuario.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.List;
 

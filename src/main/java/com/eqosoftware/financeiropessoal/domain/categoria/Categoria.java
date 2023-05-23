@@ -2,6 +2,7 @@ package com.eqosoftware.financeiropessoal.domain.categoria;
 
 import com.eqosoftware.financeiropessoal.domain.common.BaseEntity;
 import com.eqosoftware.financeiropessoal.dto.categoria.NaturezaDto;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,6 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Where;
 import org.hibernate.annotations.WhereJoinTable;
 
-import javax.persistence.*;
 import java.util.List;
 
 /**
