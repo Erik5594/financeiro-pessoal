@@ -1,7 +1,6 @@
 package com.eqosoftware.financeiropessoal.dto.despesa;
 
 import com.eqosoftware.financeiropessoal.dto.BaseDto;
-import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.pagamento.PagamentoDto;
 import lombok.Data;
 
@@ -20,10 +19,10 @@ public class DespesaDto extends BaseDto {
     private LocalDate mesCompetencia;
     private String descricao;
     private String observacao;
-    private Double valor;
-    private CategoriaDto categoria;
-    private Situacao situacao;
+    private List<DespesaCategoriaDto> categorias;
+    private TipoSituacao situacao;
     private LocalDate dataVencimento;
-    private List<PagamentoDto> pagamentos;
+    private UUID idMetodoPagamento;
+    private int qtdeParcela;
 
 }

@@ -3,7 +3,7 @@ package com.eqosoftware.financeiropessoal.dto.pagamento;
 /**
  * Created by erik on 01/04/2022.
  */
-public enum FormaPagamento {
+public enum TipoFormaPagamento {
 
     CARTAO_CREDITO("Cartão de Crédito"),
     CARTAO_DEBITO("Cartão de Débito"),
@@ -18,7 +18,7 @@ public enum FormaPagamento {
 
     private String descricao;
 
-    FormaPagamento(String descricao) {
+    TipoFormaPagamento(String descricao) {
         this.descricao = descricao;
     }
 

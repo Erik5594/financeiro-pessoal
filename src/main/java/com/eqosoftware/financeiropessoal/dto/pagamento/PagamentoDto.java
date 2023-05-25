@@ -12,8 +12,8 @@ import java.util.UUID;
 @Data
 public class PagamentoDto extends BaseDto {
 
-    private FormaPagamento formaPagamento;
-    private CondicaoPagamento condicaoPagamento;
+    private TipoFormaPagamento formaPagamento;
+    private TipoCondicaoPagamento condicaoPagamento;
     private Double valorTotal;
     private LocalDate data;
     private ParcelamentoDto parcelamento;

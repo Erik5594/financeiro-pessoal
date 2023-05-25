@@ -1,7 +1,6 @@
 package com.eqosoftware.financeiropessoal.web.rest.v1.integrante;
 
 
-import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.integrante.IntegranteDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
