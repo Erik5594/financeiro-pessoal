@@ -8,7 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface MetodoPagamentoRepository  extends JpaRepository<MetodoPagamento, Long>{
@@ -17,5 +18,7 @@ public interface MetodoPagamentoRepository  extends JpaRepository<MetodoPagament
     MetodoPagamento findByNome(@Param("nome") String nome);
 
     Page<MetodoPagamento> findAllByNomeIgnoreCaseContains(@Param("nome") String nome, Pageable page);
+
+    Optional<MetodoPagamento> findByUuid(@Param("uuid") UUID uuid);
 
 }

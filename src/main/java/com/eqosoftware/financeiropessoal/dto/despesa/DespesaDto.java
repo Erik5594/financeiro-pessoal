@@ -1,7 +1,6 @@
 package com.eqosoftware.financeiropessoal.dto.despesa;
 
 import com.eqosoftware.financeiropessoal.dto.BaseDto;
-import com.eqosoftware.financeiropessoal.dto.pagamento.PagamentoDto;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -24,5 +23,6 @@ public class DespesaDto extends BaseDto {
     private LocalDate dataVencimento;
     private UUID idMetodoPagamento;
     private int qtdeParcela;
+    private boolean recorrente;
 
 }

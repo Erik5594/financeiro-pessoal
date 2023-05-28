@@ -9,6 +9,7 @@ import java.util.UUID;
 public class DespesaCategoriaDto {
 
     private UUID idCategoria;
+    private String descricao;
     private BigDecimal valor;
 
 }
