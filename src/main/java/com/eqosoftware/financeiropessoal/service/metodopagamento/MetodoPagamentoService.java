@@ -12,9 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 public class MetodoPagamentoService {
@@ -31,8 +30,8 @@ public class MetodoPagamentoService {
         metodoPagamentoRepository.save(metodoPagamento);
     }
 
-    public void remover(long idMetodoPagamento){
-        var metodoPagamentoOpt = metodoPagamentoRepository.findById(idMetodoPagamento);
+    public void remover(UUID uuidMetodoPagamento){
+        var metodoPagamentoOpt = metodoPagamentoRepository.findByUuid(uuidMetodoPagamento);
         if(metodoPagamentoOpt.isPresent()){
             metodoPagamentoRepository.delete(metodoPagamentoOpt.get());
         }

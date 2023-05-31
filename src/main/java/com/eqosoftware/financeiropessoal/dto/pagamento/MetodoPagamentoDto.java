@@ -7,5 +7,6 @@ import lombok.Data;
 public class MetodoPagamentoDto extends BaseDto {
 
     private String nome;
+    private String descricao;
 
 }

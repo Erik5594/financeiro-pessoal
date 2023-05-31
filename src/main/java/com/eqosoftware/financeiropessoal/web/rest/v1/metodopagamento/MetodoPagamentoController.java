@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/metodo-pagamento")
 public class MetodoPagamentoController {
@@ -26,9 +28,9 @@ public class MetodoPagamentoController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{idMetodoPagamento}")
-    public ResponseEntity<Void> deletar(@PathVariable long idMetodoPagamento) {
-        metodoPagamentoService.remover(idMetodoPagamento);
+    @DeleteMapping("/{uuidMetodoPagamento}")
+    public ResponseEntity<Void> deletar(@PathVariable UUID uuidMetodoPagamento) {
+        metodoPagamentoService.remover(uuidMetodoPagamento);
         return ResponseEntity.ok().build();
     }
 

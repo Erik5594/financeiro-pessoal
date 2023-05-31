@@ -15,5 +15,7 @@ public class MetodoPagamento extends BaseEntity {
 
     @Column(nullable = false)
     private String nome;
+    @Column
+    private String descricao;
 
 }
