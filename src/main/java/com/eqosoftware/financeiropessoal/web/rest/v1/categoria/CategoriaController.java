@@ -1,6 +1,7 @@
 package com.eqosoftware.financeiropessoal.web.rest.v1.categoria;
 
 import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
+import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaNaturezaTreeDto;
 import com.eqosoftware.financeiropessoal.service.categoria.CategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,11 @@ public class CategoriaController {
     @GetMapping
     public ResponseEntity<List<CategoriaDto>> listar() {
         return ResponseEntity.ok(categoriaService.listar());
+    }
+
+    @GetMapping("/tree")
+    public ResponseEntity<CategoriaNaturezaTreeDto> buscarTodas() {
+        return ResponseEntity.ok(categoriaService.buscarTodasToTree());
     }
 
     @GetMapping("/{id}")

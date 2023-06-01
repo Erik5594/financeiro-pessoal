@@ -1,7 +1,7 @@
 package com.eqosoftware.financeiropessoal.domain.categoria;
 
 import com.eqosoftware.financeiropessoal.domain.common.BaseEntity;
-import com.eqosoftware.financeiropessoal.dto.categoria.NaturezaDto;
+import com.eqosoftware.financeiropessoal.dto.categoria.TipoNatureza;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +29,7 @@ public class Categoria extends BaseEntity {
     private String descricao;
 
     @Enumerated(EnumType.STRING)
-    private NaturezaDto natureza;
+    private TipoNatureza natureza;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_pai")

@@ -2,6 +2,7 @@ package com.eqosoftware.financeiropessoal.service.categoria.mapper;
 
 import com.eqosoftware.financeiropessoal.domain.categoria.Categoria;
 import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
+import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaTreeDto;
 import org.mapstruct.InheritConfiguration;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
@@ -24,5 +25,10 @@ public interface CategoriaMapper {
 
     @IterableMapping(elementTargetType = CategoriaDto.class)
     List<CategoriaDto> toDto(List<Categoria> categorias);
+
+    @Mapping(source = "uuid", target = "key")
+    @Mapping(source = "nome", target = "title")
+    @Mapping(source = "categoriasFilha", target = "children")
+    CategoriaTreeDto toTree(Categoria categoria);
 
 }

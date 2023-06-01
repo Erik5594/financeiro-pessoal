@@ -3,6 +3,9 @@ package com.eqosoftware.financeiropessoal.service.categoria;
 import com.eqosoftware.financeiropessoal.domain.categoria.Categoria;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroCategoria;
 import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
+import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaNaturezaTreeDto;
+import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaTreeDto;
+import com.eqosoftware.financeiropessoal.dto.categoria.TipoNatureza;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
 import com.eqosoftware.financeiropessoal.repository.categoria.CategoriaRepository;
 import com.eqosoftware.financeiropessoal.service.categoria.mapper.CategoriaMapper;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by erik on 13/04/2022.
@@ -82,6 +86,21 @@ public class CategoriaService {
 
     public List<CategoriaDto> listar(){
         return categoriaMapper.toDto(categoriaRepository.findAll());
+    }
+
+    public CategoriaNaturezaTreeDto buscarTodasToTree(){
+        List<Categoria> categorias = categoriaRepository.findAllByCategoriaPaiIsNull();
+        List<Categoria> despesas = categorias
+                .stream()
+                .filter(categoria -> TipoNatureza.DESPESA.equals(categoria.getNatureza()))
+                .toList();
+        List<Categoria> receitas = categorias
+                .stream()
+                .filter(categoria -> TipoNatureza.RECEITA.equals(categoria.getNatureza()))
+                .toList();
+        List<CategoriaTreeDto> despesasTree = despesas.stream().map(this.categoriaMapper::toTree).toList();
+        List<CategoriaTreeDto> receitasTree = receitas.stream().map(this.categoriaMapper::toTree).toList();
+        return new CategoriaNaturezaTreeDto(receitasTree, despesasTree);
     }
 
     public CategoriaDto buscar(UUID categoriaId){

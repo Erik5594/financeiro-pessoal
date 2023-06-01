@@ -16,7 +16,7 @@ public class CategoriaDto extends BaseDto {
 
     private String nome;
     private String descricao;
-    private NaturezaDto natureza;
+    private TipoNatureza natureza;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID idCategoriaPai;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)

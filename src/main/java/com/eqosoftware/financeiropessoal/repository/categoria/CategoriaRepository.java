@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -18,5 +19,7 @@ public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
 
     @Query(value = "select * from categoria where upper(nome) = upper(:nome);", nativeQuery = true)
     Categoria findByNome(@Param("nome") String nome);
+
+    List<Categoria> findAllByCategoriaPaiIsNull();
 
 }
