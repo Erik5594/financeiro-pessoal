@@ -27,6 +27,12 @@ public class CategoriaController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> editar(@PathVariable String id, @RequestBody CategoriaDto categoriaDTO) {
+        categoriaService.atualizar(UUID.fromString(id), categoriaDTO);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping
     public ResponseEntity<List<CategoriaDto>> listar() {
         return ResponseEntity.ok(categoriaService.listar());

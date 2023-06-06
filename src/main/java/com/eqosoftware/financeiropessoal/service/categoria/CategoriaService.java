@@ -41,14 +41,25 @@ public class CategoriaService {
         categoriaRepository.save(categoria);
     }
 
+    public void atualizar(UUID idCategoria, CategoriaDto categoriaDto){
+        var categoriaBanco = categoriaRepository.findCategoriaByUuid(idCategoria);
+        if(Objects.isNull(categoriaBanco)){
+            throw new ValidacaoException(TipoErroCategoria.NAO_ENCONTRADA);
+        }
+        validarNovaCategoria(categoriaDto);
+        categoriaBanco.setNome(categoriaDto.getNome());
+        categoriaBanco.setDescricao(categoriaDto.getDescricao());
+        categoriaRepository.save(categoriaBanco);
+    }
+
     private void validarNovaCategoria(CategoriaDto categoriaDto){
         if(StringUtils.isBlank(categoriaDto.getNome())){
             throw new ValidacaoException(TipoErroCategoria.NOME_NAO_INFORMADO);
         }
 
-        if(StringUtils.isBlank(categoriaDto.getDescricao())){
+        /*if(StringUtils.isBlank(categoriaDto.getDescricao())){
             throw new ValidacaoException(TipoErroCategoria.DESCRICAO_NAO_INFORMADO);
-        }
+        }*/
 
         if(Objects.isNull(categoriaDto.getNatureza())){
             throw new ValidacaoException(TipoErroCategoria.NATUREZA_NAO_INFORMADO);
