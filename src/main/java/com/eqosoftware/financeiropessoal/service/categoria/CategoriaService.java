@@ -2,17 +2,24 @@ package com.eqosoftware.financeiropessoal.service.categoria;
 
 import com.eqosoftware.financeiropessoal.domain.categoria.Categoria;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroCategoria;
-import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
-import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaNaturezaTreeDto;
-import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaTreeDto;
-import com.eqosoftware.financeiropessoal.dto.categoria.TipoNatureza;
+import com.eqosoftware.financeiropessoal.dto.categoria.*;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
 import com.eqosoftware.financeiropessoal.repository.categoria.CategoriaRepository;
 import com.eqosoftware.financeiropessoal.service.categoria.mapper.CategoriaMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +38,9 @@ public class CategoriaService {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     public void criar(CategoriaDto categoriaDto){
         validarNovaCategoria(categoriaDto);
@@ -84,7 +94,7 @@ public class CategoriaService {
             return false;
         }
 
-        if(Objects.nonNull(idCategoriaPai) && Objects.nonNull(categoria.getCategoriaPai()) && !idCategoriaPai.equals(categoria.getCategoriaPai().getUuid())){
+        if(Objects.nonNull(idCategoriaPai) && !idCategoriaPai.equals(categoria.getCategoriaPai().getUuid())){
             return false;
         }
 
@@ -95,8 +105,46 @@ public class CategoriaService {
         return categoriaRepository.findCategoriaByUuid(categoriaId);
     }
 
-    public List<CategoriaDto> listar(){
-        return categoriaMapper.toDto(categoriaRepository.findAll());
+    public List<CategoriaDto> listar(FiltroDto filtroDto){
+        if(filtroDto.semFiltro()){
+            return categoriaRepository.findAll().stream().map(categoriaMapper::toDto).toList();
+        }else{
+            return this.buscarComFiltro(filtroDto);
+        }
+    }
+
+    public CategoriaDto acrescentarNomeCategoriaPai(CategoriaDto categoriaDto){
+        Categoria categoriaPai = categoriaRepository.findCategoriaByUuid(categoriaDto.getIdCategoriaPai());
+        categoriaDto.setNome(categoriaPai.getNome() +" >> "+ categoriaDto.getNome());
+        return categoriaDto;
+    }
+
+    private List<CategoriaDto> buscarComFiltro(FiltroDto filtro){
+        var criteriaBuilder = entityManager.getCriteriaBuilder();
+        var query = criteriaBuilder.createQuery(Categoria.class);
+
+        var predicate = criteriaBuilder.conjunction();
+        var root = query.from(Categoria.class);
+
+        if(!filtro.semFiltro()){
+            if(StringUtils.isNotBlank(filtro.nome())){
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("nome"), "%"+filtro.nome()+"%"));
+            }
+            if(Objects.nonNull(filtro.natureza())){
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("natureza"), filtro.natureza()));
+            }
+        }
+
+        query.where(predicate);
+
+        var categorias = entityManager.createQuery(query)
+                .getResultStream();
+
+        if(!filtro.semFiltro() && Boolean.TRUE.equals(filtro.ultimaFilha())){
+            return categorias.filter(categoria -> CollectionUtils.isEmpty(categoria.getCategoriasFilha()))
+                    .map(categoriaMapper::toDto).toList();
+        }
+        return categorias.map(categoriaMapper::toDto).toList();
     }
 
     public CategoriaNaturezaTreeDto buscarTodasToTree(){

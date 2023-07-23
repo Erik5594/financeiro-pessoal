@@ -30,7 +30,7 @@ public class Despesa extends RecoverableEntity {
 
     private String observacao;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "despesa", cascade = CascadeType.PERSIST)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "despesa", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<DespesaCategoria> categorias;
 
     @Column(nullable = false)

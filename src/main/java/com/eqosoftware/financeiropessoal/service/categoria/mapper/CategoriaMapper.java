@@ -24,7 +24,7 @@ public interface CategoriaMapper {
     CategoriaDto toDto(Categoria categoria);
 
     @IterableMapping(elementTargetType = CategoriaDto.class)
-    List<CategoriaDto> toDto(List<Categoria> categorias);
+    List<CategoriaDto> toDtoList(List<Categoria> categorias);
 
     @Mapping(source = "uuid", target = "key")
     @Mapping(source = "nome", target = "title")
