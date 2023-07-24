@@ -1,18 +1,18 @@
 package com.eqosoftware.financeiropessoal.service.despesa;
 
-import com.eqosoftware.financeiropessoal.domain.categoria.Categoria;
 import com.eqosoftware.financeiropessoal.domain.despesa.Despesa;
 import com.eqosoftware.financeiropessoal.domain.despesa.DespesaCategoria;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroCategoria;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroDespesa;
+import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
-import com.eqosoftware.financeiropessoal.dto.pagamento.MetodoPagamentoDto;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
 import com.eqosoftware.financeiropessoal.repository.categoria.CategoriaRepository;
 import com.eqosoftware.financeiropessoal.repository.despesa.DespesaRepository;
 import com.eqosoftware.financeiropessoal.repository.metodopagamento.MetodoPagamentoRepository;
 import com.eqosoftware.financeiropessoal.service.despesa.mapper.DespesaMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +48,30 @@ public class DespesaService {
                 despesaRepository.findAll(pageable) :
                 despesaRepository.findAllByDescricaoIgnoreCaseContains(descricao, pageable);
         return despesas.map(despesaMapper::toDto);
+    }
+
+    public DespesaDto buscar(UUID categoriaId){
+        var despesa = buscarById(categoriaId);
+        if(Objects.isNull(despesa)){
+            throw new ValidacaoException(TipoErroDespesa.NAO_ENCONTRADA);
+        }
+        return despesaMapper.toDto(despesa);
+    }
+
+    private Despesa buscarById(UUID despesaId){
+        return despesaRepository.findDespesaByUuid(despesaId);
+    }
+
+    public void atualizar(UUID idDespesa, DespesaDto despesaDto){
+        var despesaBanco = despesaRepository.findDespesaByUuid(idDespesa);
+        if(Objects.isNull(despesaBanco)){
+            throw new ValidacaoException(TipoErroDespesa.NAO_ENCONTRADA);
+        }
+        var novosDados = despesaMapper.toEntity(despesaDto);
+        validarNovaDespesa(despesaDto);
+        BeanUtils.copyProperties(novosDados, despesaBanco, "categorias", "deleted", "createdBy", "createdDate", "id", "version", "uuid");
+        criarVinculos(despesaBanco);
+        despesaRepository.save(despesaBanco);
     }
 
     private void criarVinculos(Despesa despesa) {

@@ -1,5 +1,6 @@
 package com.eqosoftware.financeiropessoal.web.rest.v1.despesa;
 
+import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
 import com.eqosoftware.financeiropessoal.service.despesa.DespesaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,17 @@ public class DespesaController {
     @GetMapping
     public ResponseEntity<Page<DespesaDto>> listar(@RequestParam(value = "descricao", required = false) String descricao, Pageable page) {
         return ResponseEntity.ok(despesaService.listar(descricao, page));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> editar(@PathVariable String id, @RequestBody DespesaDto despesaDto) {
+        despesaService.atualizar(UUID.fromString(id), despesaDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DespesaDto> buscar(@PathVariable String id) {
+        return ResponseEntity.ok(despesaService.buscar(UUID.fromString(id)));
     }
 
     @PostMapping

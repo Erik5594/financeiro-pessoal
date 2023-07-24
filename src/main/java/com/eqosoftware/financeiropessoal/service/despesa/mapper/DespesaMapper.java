@@ -16,6 +16,7 @@ public interface DespesaMapper {
 
     @Mapping(source = "uuid", target = "id")
     @InheritConfiguration(name = "toDto")
+    @Mapping(source = "metodoPagamento.uuid", target = "idMetodoPagamento")
     DespesaDto toDto(Despesa entity);
 
 }
