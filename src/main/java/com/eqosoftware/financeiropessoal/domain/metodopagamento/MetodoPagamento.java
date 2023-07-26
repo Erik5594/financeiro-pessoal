@@ -17,5 +17,7 @@ public class MetodoPagamento extends BaseEntity {
     private String nome;
     @Column
     private String descricao;
+    private Integer diaVencimento;
+    private Integer diasParaFechamento;
 
 }

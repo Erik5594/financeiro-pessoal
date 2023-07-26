@@ -1,5 +1,6 @@
 package com.eqosoftware.financeiropessoal.web.rest.v1.metodopagamento;
 
+import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
 import com.eqosoftware.financeiropessoal.dto.pagamento.MetodoPagamentoDto;
 import com.eqosoftware.financeiropessoal.service.metodopagamento.MetodoPagamentoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,12 @@ public class MetodoPagamentoController {
     @DeleteMapping("/{uuidMetodoPagamento}")
     public ResponseEntity<Void> deletar(@PathVariable UUID uuidMetodoPagamento) {
         metodoPagamentoService.remover(uuidMetodoPagamento);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> editar(@PathVariable String id, @RequestBody MetodoPagamentoDto metodoPagamentoDto) {
+        metodoPagamentoService.atualizar(UUID.fromString(id), metodoPagamentoDto);
         return ResponseEntity.ok().build();
     }
 

@@ -1,12 +1,7 @@
 package com.eqosoftware.financeiropessoal.dto.pagamento;
 
-import com.eqosoftware.financeiropessoal.dto.BaseDto;
-import lombok.Data;
+import java.util.UUID;
 
-@Data
-public class MetodoPagamentoDto extends BaseDto {
-
-    private String nome;
-    private String descricao;
+public record MetodoPagamentoDto(UUID id, String nome, String descricao, Integer diaVencimento, Integer diasParaFechamento) {
 
 }

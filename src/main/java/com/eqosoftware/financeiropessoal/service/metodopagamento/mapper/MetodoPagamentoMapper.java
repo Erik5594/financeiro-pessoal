@@ -1,8 +1,6 @@
 package com.eqosoftware.financeiropessoal.service.metodopagamento.mapper;
 
-import com.eqosoftware.financeiropessoal.domain.categoria.Categoria;
 import com.eqosoftware.financeiropessoal.domain.metodopagamento.MetodoPagamento;
-import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.pagamento.MetodoPagamentoDto;
 import org.mapstruct.InheritConfiguration;
 import org.mapstruct.IterableMapping;
