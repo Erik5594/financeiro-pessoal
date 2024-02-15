@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +40,10 @@ public class CategoriaController {
     @GetMapping
     public ResponseEntity<List<CategoriaDto>> listar(FiltroDto filtroDto) {
         var categorias = categoriaService.listar(filtroDto);
-        return ResponseEntity.ok(categorias.stream().map(categoriaService::acrescentarNomeCategoriaPai).toList());
+        return ResponseEntity.ok(categorias.stream()
+                .map(categoriaService::acrescentarNomeCategoriaPai)
+                .sorted(Comparator.comparing(CategoriaDto::getNome))
+                .toList());
     }
 
     @GetMapping("/tree")

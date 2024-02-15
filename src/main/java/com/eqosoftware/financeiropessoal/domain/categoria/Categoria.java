@@ -1,6 +1,7 @@
 package com.eqosoftware.financeiropessoal.domain.categoria;
 
 import com.eqosoftware.financeiropessoal.domain.common.BaseEntity;
+import com.eqosoftware.financeiropessoal.domain.common.RecoverableEntity;
 import com.eqosoftware.financeiropessoal.dto.categoria.TipoNatureza;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,8 +34,6 @@ public class Categoria extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_pai")
-    @Where(clause = "deleted IS NULL")
-    @WhereJoinTable(clause = "deleted IS NULL")
     private Categoria categoriaPai;
 
     @OneToMany(mappedBy = "categoriaPai", cascade = { CascadeType.ALL }, orphanRemoval = true)

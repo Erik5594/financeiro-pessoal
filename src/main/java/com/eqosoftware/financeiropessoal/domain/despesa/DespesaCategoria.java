@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Where;
 
 import java.math.BigDecimal;
 
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Entity
 @DynamicUpdate
+@Where(clause = RecoverableEntity.NOT_DELETED)
 public class DespesaCategoria extends RecoverableEntity {
 
     @OneToOne

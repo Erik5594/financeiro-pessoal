@@ -7,6 +7,7 @@ public enum TipoSituacao {
 
     EM_ABERTO,
     PAGO,
-    PARCIALMENTE_PAGO;
+    PARCIALMENTE_PAGO,
+    VENCIDA;
 
 }

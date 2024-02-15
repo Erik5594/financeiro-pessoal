@@ -7,24 +7,16 @@ import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
 import com.eqosoftware.financeiropessoal.repository.categoria.CategoriaRepository;
 import com.eqosoftware.financeiropessoal.service.categoria.mapper.CategoriaMapper;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Created by erik on 13/04/2022.
@@ -56,13 +48,13 @@ public class CategoriaService {
         if(Objects.isNull(categoriaBanco)){
             throw new ValidacaoException(TipoErroCategoria.NAO_ENCONTRADA);
         }
-        validarNovaCategoria(categoriaDto);
+        validarCategoria(categoriaDto);
         categoriaBanco.setNome(categoriaDto.getNome());
         categoriaBanco.setDescricao(categoriaDto.getDescricao());
         categoriaRepository.save(categoriaBanco);
     }
 
-    private void validarNovaCategoria(CategoriaDto categoriaDto){
+    private void validarCategoria(CategoriaDto categoriaDto){
         if(StringUtils.isBlank(categoriaDto.getNome())){
             throw new ValidacaoException(TipoErroCategoria.NOME_NAO_INFORMADO);
         }
@@ -74,6 +66,10 @@ public class CategoriaService {
         if(Objects.isNull(categoriaDto.getNatureza())){
             throw new ValidacaoException(TipoErroCategoria.NATUREZA_NAO_INFORMADO);
         }
+    }
+
+    private void validarNovaCategoria(CategoriaDto categoriaDto){
+        validarCategoria(categoriaDto);
 
         if(jaExiste(categoriaDto.getNome(), categoriaDto.getIdCategoriaPai())){
             throw new ValidacaoException(TipoErroCategoria.JA_EXISTE);
@@ -142,7 +138,8 @@ public class CategoriaService {
 
         if(!filtro.semFiltro() && Boolean.TRUE.equals(filtro.ultimaFilha())){
             return categorias.filter(categoria -> CollectionUtils.isEmpty(categoria.getCategoriasFilha()))
-                    .map(categoriaMapper::toDto).toList();
+                    .map(categoriaMapper::toDto)
+                    .toList();
         }
         return categorias.map(categoriaMapper::toDto).toList();
     }

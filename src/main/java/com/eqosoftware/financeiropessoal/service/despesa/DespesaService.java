@@ -5,11 +5,14 @@ import com.eqosoftware.financeiropessoal.domain.despesa.DespesaCategoria;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroCategoria;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroDespesa;
 import com.eqosoftware.financeiropessoal.dto.dashboard.TotalizadorDespesaPorSituacao;
+import com.eqosoftware.financeiropessoal.dto.despesa.DespesaCategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
+import com.eqosoftware.financeiropessoal.dto.despesa.FiltroDespesaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.TipoSituacao;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
 import com.eqosoftware.financeiropessoal.repository.categoria.CategoriaRepository;
 import com.eqosoftware.financeiropessoal.repository.despesa.DespesaRepository;
+import com.eqosoftware.financeiropessoal.repository.despesacategoria.DespesaCategoriaRepository;
 import com.eqosoftware.financeiropessoal.repository.metodopagamento.MetodoPagamentoRepository;
 import com.eqosoftware.financeiropessoal.service.despesa.mapper.DespesaMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -28,17 +32,21 @@ import java.util.UUID;
 @Service
 public class DespesaService {
 
-    @Autowired
-    private DespesaRepository despesaRepository;
+    private final DespesaCategoriaService despesaCategoriaService;
+    private final DespesaRepository despesaRepository;
+    private final DespesaMapper despesaMapper;
+    private final MetodoPagamentoRepository metodoPagamentoRepository;
+    private final CategoriaRepository categoriaRepository;
 
     @Autowired
-    private DespesaMapper despesaMapper;
-
-    @Autowired
-    private MetodoPagamentoRepository metodoPagamentoRepository;
-
-    @Autowired
-    private CategoriaRepository categoriaRepository;
+    public DespesaService(DespesaCategoriaService despesaCategoriaService, DespesaRepository despesaRepository, DespesaMapper despesaMapper,
+                          MetodoPagamentoRepository metodoPagamentoRepository, CategoriaRepository categoriaRepository) {
+        this.despesaCategoriaService = despesaCategoriaService;
+        this.despesaRepository = despesaRepository;
+        this.despesaMapper = despesaMapper;
+        this.metodoPagamentoRepository = metodoPagamentoRepository;
+        this.categoriaRepository = categoriaRepository;
+    }
 
     public void criar(DespesaDto despesaDto){
         validarNovaDespesa(despesaDto);
@@ -48,11 +56,19 @@ public class DespesaService {
         despesaRepository.save(despesa);
     }
 
-    public Page<DespesaDto> listar(String descricao, Pageable pageable){
-        var despesas = StringUtils.isBlank(descricao) ?
-                despesaRepository.findAll(pageable) :
-                despesaRepository.findAllByDescricaoIgnoreCaseContains(descricao, pageable);
-        return despesas.map(despesaMapper::toDto);
+    public Page<DespesaDto> listar(FiltroDespesaDto filtro, Pageable pageable){
+        var despesas = despesaRepository.findAll(filtro.toSpec(), pageable);
+        return despesas.map(despesaMapper::toDto).map(this::atualizarSituacaoVencido);
+    }
+
+    private DespesaDto atualizarSituacaoVencido(DespesaDto despesa){
+        var despesaNew = new DespesaDto();
+        BeanUtils.copyProperties(despesa, despesaNew);
+        if(despesa.getDataVencimento().isBefore(LocalDate.now())
+                && TipoSituacao.EM_ABERTO.equals(despesa.getSituacao())){
+            despesaNew.setSituacao(TipoSituacao.VENCIDA);
+        }
+        return despesaNew;
     }
 
     public DespesaDto buscar(UUID categoriaId){
@@ -72,12 +88,13 @@ public class DespesaService {
         if(Objects.isNull(despesaBanco)){
             throw new ValidacaoException(TipoErroDespesa.NAO_ENCONTRADA);
         }
-        var novosDados = despesaMapper.toEntity(despesaDto);
         validarNovaDespesa(despesaDto);
+        var novosDados = despesaMapper.toEntity(despesaDto);
         novosDados.setMesCompetencia(novosDados.getMesCompetencia().withDayOfMonth(1));
-        BeanUtils.copyProperties(novosDados, despesaBanco, "categorias", "deleted", "createdBy", "createdDate", "id", "version", "uuid");
-        criarVinculos(despesaBanco);
-        despesaRepository.save(despesaBanco);
+        BeanUtils.copyProperties(novosDados, despesaBanco, "categorias","deleted", "createdBy", "createdDate", "id", "version", "uuid");
+        criarVinculoMetodoPagamento(despesaBanco);
+        despesaRepository.saveAndFlush(despesaBanco);
+        despesaCategoriaService.atualizarDespesasCategoria(idDespesa, novosDados.getCategorias());
     }
 
     private void criarVinculos(Despesa despesa) {
@@ -86,7 +103,10 @@ public class DespesaService {
     }
 
     private void criarVinculoCategoriaDespesa(Despesa despesa) {
-        despesa.getCategorias().forEach(despesaCategoria -> this.criarVinculoDespesaCategoria(despesa, despesaCategoria));
+        despesa.getCategorias()
+                .stream()
+                .filter(despesaCategoria -> Objects.isNull(despesaCategoria.getDeleted()))
+                .forEach(despesaCategoria -> this.criarVinculoDespesaCategoria(despesa, despesaCategoria));
     }
 
     private void criarVinculoDespesaCategoria(Despesa despesa, DespesaCategoria despesaCategoria){
@@ -128,19 +148,37 @@ public class DespesaService {
 
         var despesas = despesaRepository.findAllByMesCompetencia(competencia);
 
-        var despesasPagas = despesas.stream().filter(despesa -> TipoSituacao.PAGO == despesa.getSituacao()).toList();
-        var despesasEmAberto = despesas.stream().filter(despesa -> TipoSituacao.EM_ABERTO == despesa.getSituacao() && !despesa.getDataVencimento().isBefore(LocalDate.now())).toList();
-        var despesasVencidas = despesas.stream().filter(despesa -> TipoSituacao.EM_ABERTO == despesa.getSituacao() && despesa.getDataVencimento().isBefore(LocalDate.now())).toList();
+        var despesasPagas = despesas.stream()
+                .filter(despesa -> TipoSituacao.PAGO == despesa.getSituacao()).toList();
+
+        var despesasEmAberto = despesas.stream()
+                .filter(despesa -> TipoSituacao.EM_ABERTO == despesa.getSituacao()
+                        && !despesa.getDataVencimento().isBefore(LocalDate.now())).toList();
+
+        var despesasVencidas = despesas.stream()
+                .filter(despesa -> TipoSituacao.EM_ABERTO == despesa.getSituacao()
+                        && despesa.getDataVencimento().isBefore(LocalDate.now())).toList();
 
         var qtdeDespesasPagas = despesasPagas.size();
         var qtdeDespesasEmAberto = despesasEmAberto.size();
         var qtdeDespesasVencidas = despesasVencidas.size();
 
-        var totalDespesasPagas = despesasPagas.stream().map(Despesa::getCategorias).flatMap(List::stream).map(DespesaCategoria::getValor).mapToDouble(BigDecimal::doubleValue).sum();
-        var totalDespesasEmAberto = despesasEmAberto.stream().flatMap(despesa -> despesa.getCategorias().stream()).map(DespesaCategoria::getValor).mapToDouble(BigDecimal::doubleValue).sum();;
-        var totalDespesasVencidas = despesasVencidas.stream().flatMap(despesa -> despesa.getCategorias().stream()).map(DespesaCategoria::getValor).mapToDouble(BigDecimal::doubleValue).sum();;
+        var totalDespesasPagas = despesasPagas.stream()
+                .map(Despesa::getCategorias).flatMap(List::stream)
+                .map(DespesaCategoria::getValor).mapToDouble(BigDecimal::doubleValue).sum();
 
-        return new TotalizadorDespesaPorSituacao(totalDespesasPagas,totalDespesasEmAberto,totalDespesasVencidas, qtdeDespesasPagas, qtdeDespesasEmAberto, qtdeDespesasVencidas);
+        var totalDespesasEmAberto = despesasEmAberto.stream()
+                .flatMap(despesa -> despesa.getCategorias().stream())
+                .map(DespesaCategoria::getValor).mapToDouble(BigDecimal::doubleValue).sum();
+
+        var totalDespesasVencidas = despesasVencidas.stream()
+                .flatMap(despesa -> despesa.getCategorias().stream())
+                .map(DespesaCategoria::getValor).mapToDouble(BigDecimal::doubleValue).sum();
+
+        return new TotalizadorDespesaPorSituacao(
+                totalDespesasPagas,totalDespesasEmAberto,totalDespesasVencidas,
+                qtdeDespesasPagas, qtdeDespesasEmAberto, qtdeDespesasVencidas
+        );
     }
 
 }

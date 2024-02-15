@@ -1,6 +1,5 @@
 package com.eqosoftware.financeiropessoal.repository.categoria;
 
-import com.eqosoftware.financeiropessoal.domain.auth.GrupoAcesso;
 import com.eqosoftware.financeiropessoal.domain.categoria.Categoria;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.repository.JpaRepository;

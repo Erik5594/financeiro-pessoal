@@ -53,7 +53,7 @@ public class MetodoPagamentoService {
         var metodoPagamentoBanco = metodoPagamentoBancoOpt.get();
         var novosDados = metodoPagamentoMapper.toEntity(metodoPagamentoDto);
         validarMetodoPagamento(metodoPagamentoDto);
-        BeanUtils.copyProperties(novosDados, metodoPagamentoBanco, "nome", "id", "version", "uuid");
+        BeanUtils.copyProperties(novosDados, metodoPagamentoBanco, "id", "version", "uuid");
         metodoPagamentoRepository.save(metodoPagamentoBanco);
     }
 

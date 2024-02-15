@@ -1,11 +1,13 @@
 package com.eqosoftware.financeiropessoal.web.rest.v1.despesa;
 
-import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
+import com.eqosoftware.financeiropessoal.dto.despesa.FiltroDespesaDto;
 import com.eqosoftware.financeiropessoal.service.despesa.DespesaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +21,9 @@ public class DespesaController {
     private DespesaService despesaService;
 
     @GetMapping
-    public ResponseEntity<Page<DespesaDto>> listar(@RequestParam(value = "descricao", required = false) String descricao, Pageable page) {
-        return ResponseEntity.ok(despesaService.listar(descricao, page));
+    public ResponseEntity<Page<DespesaDto>> listar(FiltroDespesaDto filtro,
+                                                   @PageableDefault(sort = "dataVencimento", direction = Sort.Direction.DESC) Pageable page) {
+        return ResponseEntity.ok(despesaService.listar(filtro, page));
     }
 
     @PutMapping("/{id}")
