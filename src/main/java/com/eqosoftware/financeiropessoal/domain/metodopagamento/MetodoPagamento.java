@@ -3,6 +3,8 @@ package com.eqosoftware.financeiropessoal.domain.metodopagamento;
 import com.eqosoftware.financeiropessoal.domain.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +19,10 @@ public class MetodoPagamento extends BaseEntity {
     private String nome;
     @Column
     private String descricao;
+    @Enumerated(EnumType.STRING)
+    private TipoMetodoPagamento tipoMetodoPagamento;
     private Integer diaVencimento;
     private Integer diasParaFechamento;
+    private Boolean padrao;
 
 }

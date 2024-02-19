@@ -1,5 +1,8 @@
 package com.eqosoftware.financeiropessoal.domain.erro;
 
+import lombok.Getter;
+
+@Getter
 public enum TipoErroCategoria implements Erro {
 
     NOME_NAO_INFORMADO("Deve ser informado um nome para a nova categoria.", 400),
@@ -9,19 +12,12 @@ public enum TipoErroCategoria implements Erro {
     NAO_ENCONTRADA("Categoria não encontrada.", 400),
     NAO_PODE_EXCLUIR_COM_FILHAS("Não é permitido excluir essa categoria, pois ela tem registro filhos.", 400);
 
-    private String descricaoErro;
-    private int statusHttp;
+    private final String descricaoErro;
+    private final int statusHttp;
 
     TipoErroCategoria(String descricaoErro, int statusHttp) {
         this.descricaoErro = descricaoErro;
         this.statusHttp = statusHttp;
     }
 
-    public String getDescricaoErro() {
-        return descricaoErro;
-    }
-
-    public int getStatusHttp() {
-        return statusHttp;
-    }
 }

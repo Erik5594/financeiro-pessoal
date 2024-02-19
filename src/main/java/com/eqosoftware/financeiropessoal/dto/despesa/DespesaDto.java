@@ -36,6 +36,8 @@ public class DespesaDto extends BaseDto {
 
     private int qtdeParcela;
 
+    private int numParcela;
+
     private boolean recorrente;
 
 }

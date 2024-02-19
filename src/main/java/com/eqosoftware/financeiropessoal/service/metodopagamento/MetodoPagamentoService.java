@@ -2,7 +2,8 @@ package com.eqosoftware.financeiropessoal.service.metodopagamento;
 
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroDespesa;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroMetodoPagamento;
-import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
+import com.eqosoftware.financeiropessoal.domain.metodopagamento.MetodoPagamento;
+import com.eqosoftware.financeiropessoal.domain.metodopagamento.TipoMetodoPagamento;
 import com.eqosoftware.financeiropessoal.dto.pagamento.MetodoPagamentoDto;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
 import com.eqosoftware.financeiropessoal.repository.metodopagamento.MetodoPagamentoRepository;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -21,40 +23,65 @@ import java.util.UUID;
 @Service
 public class MetodoPagamentoService {
 
-    @Autowired
-    private MetodoPagamentoMapper metodoPagamentoMapper;
+    private final MetodoPagamentoMapper mapper;
+    private final MetodoPagamentoRepository repository;
 
     @Autowired
-    private MetodoPagamentoRepository metodoPagamentoRepository;
+    public MetodoPagamentoService(MetodoPagamentoMapper mapper, MetodoPagamentoRepository repository) {
+        this.mapper = mapper;
+        this.repository = repository;
+    }
 
+    @Transactional
     public void criar(MetodoPagamentoDto metodoPagamentoDto){
         validarNovoMetodoPagamento(metodoPagamentoDto);
-        var metodoPagamento = metodoPagamentoMapper.toEntity(metodoPagamentoDto);
-        metodoPagamentoRepository.save(metodoPagamento);
+        if(Boolean.TRUE.equals(metodoPagamentoDto.padrao())){
+            var metodoPagamentoOpt = repository.findByPadraoIsTrue();
+            metodoPagamentoOpt.ifPresent(this::marcarComoNaoPadrao);
+        }
+        var metodoPagamento = mapper.toEntity(metodoPagamentoDto);
+        metodoPagamento.setPadrao(Boolean.TRUE.equals(metodoPagamento.getPadrao()));
+        corrigirTipoMetodoPagamento(metodoPagamento);
+        repository.save(metodoPagamento);
+    }
+
+    private void marcarComoNaoPadrao(MetodoPagamento metodoPagamento){
+        metodoPagamento.setPadrao(false);
+        repository.save(metodoPagamento);
     }
 
     public void remover(UUID uuidMetodoPagamento){
-        var metodoPagamentoOpt = metodoPagamentoRepository.findByUuid(uuidMetodoPagamento);
-        metodoPagamentoOpt.ifPresent(metodoPagamento -> metodoPagamentoRepository.delete(metodoPagamento));
+        var metodoPagamentoOpt = repository.findByUuid(uuidMetodoPagamento);
+        metodoPagamentoOpt.ifPresent(metodoPagamento -> repository.delete(metodoPagamento));
     }
 
     public Page<MetodoPagamentoDto> listarMetodosPagamento(String nome, Pageable pageable){
         var metodosPagamento = StringUtils.isBlank(nome) ?
-                metodoPagamentoRepository.findAll(pageable) :
-                metodoPagamentoRepository.findAllByNomeIgnoreCaseContains(nome, pageable);
-        return metodosPagamento.map(metodoPagamentoMapper::toDto);
+                repository.findAll(pageable) :
+                repository.findAllByNomeIgnoreCaseContains(nome, pageable);
+        metodosPagamento.forEach(this::corrigirTipoMetodoPagamento);
+        return metodosPagamento.map(mapper::toDto);
     }
 
+    @Transactional
     public void atualizar(UUID idMetodoPagamento, MetodoPagamentoDto metodoPagamentoDto){
-        var metodoPagamentoBancoOpt = metodoPagamentoRepository.findByUuid(idMetodoPagamento);
+        var metodoPagamentoBancoOpt = repository.findByUuid(idMetodoPagamento);
         if(metodoPagamentoBancoOpt.isEmpty()){
             throw new ValidacaoException(TipoErroDespesa.NAO_ENCONTRADA);
         }
+        var metodoPagamentoOpt = repository.findByPadraoIsTrue();
+        if(Boolean.TRUE.equals(metodoPagamentoDto.padrao())
+                && metodoPagamentoOpt.isPresent()
+                && !metodoPagamentoOpt.get().getUuid().equals(idMetodoPagamento)){
+            metodoPagamentoOpt.ifPresent(this::marcarComoNaoPadrao);
+        }
         var metodoPagamentoBanco = metodoPagamentoBancoOpt.get();
-        var novosDados = metodoPagamentoMapper.toEntity(metodoPagamentoDto);
+        var novosDados = mapper.toEntity(metodoPagamentoDto);
+        novosDados.setPadrao(Boolean.TRUE.equals(novosDados.getPadrao()));
+        corrigirTipoMetodoPagamento(novosDados);
         validarMetodoPagamento(metodoPagamentoDto);
         BeanUtils.copyProperties(novosDados, metodoPagamentoBanco, "id", "version", "uuid");
-        metodoPagamentoRepository.save(metodoPagamentoBanco);
+        repository.save(metodoPagamentoBanco);
     }
 
     private void validarNovoMetodoPagamento(MetodoPagamentoDto metodoPagamentoDto) {
@@ -69,22 +96,31 @@ public class MetodoPagamentoService {
             throw new ValidacaoException(TipoErroMetodoPagamento.NOME_NAO_INFORMADO);
         }
         if(Objects.nonNull(metodoPagamentoDto.diaVencimento())
-                && !estaEntre(metodoPagamentoDto.diaVencimento(), 1, 31)){
+                && naoEstaEntre(metodoPagamentoDto.diaVencimento(), 31)){
             throw new ValidacaoException(TipoErroMetodoPagamento.DIA_VENCIMENTO_FORA_DO_INTERVALO);
         }
         if(Objects.nonNull(metodoPagamentoDto.diasParaFechamento())
-                && !estaEntre(metodoPagamentoDto.diasParaFechamento(), 1, 15)){
+                && naoEstaEntre(metodoPagamentoDto.diasParaFechamento(), 15)){
             throw new ValidacaoException(TipoErroMetodoPagamento.DIAS_FECHAMENTO_FORA_DO_INTERVALO);
         }
     }
 
     private boolean jaExiste(@NonNull final String nome){
-        var metodoPagamento = metodoPagamentoRepository.findByNome(nome);
+        var metodoPagamento = repository.findByNome(nome);
         return Objects.nonNull(metodoPagamento);
     }
 
-    private boolean estaEntre(int valor, int inicio, int fim){
-        return (valor > inicio && valor < fim);
+    private boolean naoEstaEntre(int valor, int fim){
+        return (valor < 1 || valor > fim);
+    }
+
+    private void corrigirTipoMetodoPagamento(MetodoPagamento metodoPagamento){
+        if(Objects.nonNull(metodoPagamento.getDiaVencimento())
+                && Objects.nonNull(metodoPagamento.getDiasParaFechamento())){
+            metodoPagamento.setTipoMetodoPagamento(TipoMetodoPagamento.CARTAO_CREDITO);
+        }else{
+            metodoPagamento.setTipoMetodoPagamento(TipoMetodoPagamento.OUTROS);
+        }
     }
 
 }

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,36 +18,30 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @DynamicUpdate
+@Where(clause = RecoverableEntity.NOT_DELETED)
 public class Despesa extends RecoverableEntity {
 
     @Column(nullable = false)
     private LocalDate dataLancamento;
-
     @Column(nullable = false)
     private LocalDate mesCompetencia;
-
     @Column(nullable = false)
     private String descricao;
-
     private String observacao;
-
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "despesa", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     private List<DespesaCategoria> categorias;
-
     @Column(nullable = false)
     private TipoSituacao situacao;
-
     @Column(nullable = false)
     private LocalDate dataVencimento;
-
     @OneToOne
     @JoinColumn(name = "id_metodo_pagamento")
     private MetodoPagamento metodoPagamento;
-
     private int qtdeParcela;
-
     private int numParcela;
-
     private boolean recorrente;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "despesa_pai")
+    private Despesa despesaPai;
 
 }

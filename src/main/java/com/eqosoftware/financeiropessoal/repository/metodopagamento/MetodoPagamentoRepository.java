@@ -16,9 +16,8 @@ public interface MetodoPagamentoRepository  extends JpaRepository<MetodoPagament
 
     @Query(value = "select * from metodo_pagamento where upper(nome) = upper(:nome);", nativeQuery = true)
     MetodoPagamento findByNome(@Param("nome") String nome);
-
     Page<MetodoPagamento> findAllByNomeIgnoreCaseContains(@Param("nome") String nome, Pageable page);
-
     Optional<MetodoPagamento> findByUuid(@Param("uuid") UUID uuid);
+    Optional<MetodoPagamento> findByPadraoIsTrue();
 
 }

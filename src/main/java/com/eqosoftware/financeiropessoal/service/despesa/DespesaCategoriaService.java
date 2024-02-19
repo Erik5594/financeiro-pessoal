@@ -49,7 +49,7 @@ public class DespesaCategoriaService {
         despesaCategoriaRequestAdicionar.forEach(despesaCategoria -> adicionar(uuidDespesa, despesaCategoria));
     }
 
-    private void remover(DespesaCategoria despesaCategoria){
+    public void remover(DespesaCategoria despesaCategoria){
         despesaCategoria.setDeleted(Instant.now());
         repository.saveAndFlush(despesaCategoria);
     }
@@ -73,7 +73,7 @@ public class DespesaCategoriaService {
 
     private void criarVinculoDespesaCategoria(UUID uuidDespesa, DespesaCategoria despesaCategoria){
         var despesa = despesaRepository.findDespesaByUuid(uuidDespesa);
-        despesaCategoria.setDespesa(despesa);
+        despesaCategoria.setDespesa(despesa.orElseThrow());
         var categoria = categoriaRepository.findCategoriaByUuid(despesaCategoria.getCategoria().getUuid());
         if(Objects.nonNull(categoria))
             despesaCategoria.setCategoria(categoria);

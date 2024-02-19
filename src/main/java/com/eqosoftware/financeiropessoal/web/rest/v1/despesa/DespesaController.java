@@ -4,6 +4,7 @@ import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.FiltroDespesaDto;
 import com.eqosoftware.financeiropessoal.service.despesa.DespesaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -11,6 +12,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -32,6 +34,18 @@ public class DespesaController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}/pagar")
+    public ResponseEntity<Void> pagar(@PathVariable String id) {
+        despesaService.pagar(UUID.fromString(id));
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/pagar")
+    public ResponseEntity<Void> pagarVarias(@RequestBody List<String> ids) {
+        despesaService.pagarVarias(ids.stream().map(UUID::fromString).toList());
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<DespesaDto> buscar(@PathVariable String id) {
         return ResponseEntity.ok(despesaService.buscar(UUID.fromString(id)));
@@ -48,5 +62,11 @@ public class DespesaController {
         despesaService.deletar(UUID.fromString(id));
         return ResponseEntity.ok().build();
     }
+    @DeleteMapping
+    public ResponseEntity<Void> deletarVarios(@RequestBody List<String> ids) {
+        despesaService.deletarVarios(ids.stream().map(UUID::fromString).toList());
+        return ResponseEntity.ok().build();
+    }
+
 
 }

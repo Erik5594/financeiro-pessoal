@@ -1,9 +1,10 @@
 package com.eqosoftware.financeiropessoal.service.despesa;
 
+import com.eqosoftware.financeiropessoal.domain.categoria.Categoria;
 import com.eqosoftware.financeiropessoal.domain.despesa.Despesa;
 import com.eqosoftware.financeiropessoal.domain.despesa.DespesaCategoria;
-import com.eqosoftware.financeiropessoal.domain.erro.TipoErroCategoria;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroDespesa;
+import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.dashboard.TotalizadorDespesaPorSituacao;
 import com.eqosoftware.financeiropessoal.dto.despesa.DespesaCategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
@@ -12,8 +13,8 @@ import com.eqosoftware.financeiropessoal.dto.despesa.TipoSituacao;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
 import com.eqosoftware.financeiropessoal.repository.categoria.CategoriaRepository;
 import com.eqosoftware.financeiropessoal.repository.despesa.DespesaRepository;
-import com.eqosoftware.financeiropessoal.repository.despesacategoria.DespesaCategoriaRepository;
 import com.eqosoftware.financeiropessoal.repository.metodopagamento.MetodoPagamentoRepository;
+import com.eqosoftware.financeiropessoal.service.categoria.CategoriaService;
 import com.eqosoftware.financeiropessoal.service.despesa.mapper.DespesaMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -33,19 +36,23 @@ import java.util.UUID;
 public class DespesaService {
 
     private final DespesaCategoriaService despesaCategoriaService;
-    private final DespesaRepository despesaRepository;
+    private final DespesaRepository repository;
     private final DespesaMapper despesaMapper;
     private final MetodoPagamentoRepository metodoPagamentoRepository;
     private final CategoriaRepository categoriaRepository;
+    private final DespesaFiltroToSpecification specification;
+    private final CategoriaService categoriaService;
 
     @Autowired
     public DespesaService(DespesaCategoriaService despesaCategoriaService, DespesaRepository despesaRepository, DespesaMapper despesaMapper,
-                          MetodoPagamentoRepository metodoPagamentoRepository, CategoriaRepository categoriaRepository) {
+                          MetodoPagamentoRepository metodoPagamentoRepository, CategoriaRepository categoriaRepository, DespesaFiltroToSpecification specification, CategoriaService categoriaService) {
         this.despesaCategoriaService = despesaCategoriaService;
-        this.despesaRepository = despesaRepository;
+        this.repository = despesaRepository;
         this.despesaMapper = despesaMapper;
         this.metodoPagamentoRepository = metodoPagamentoRepository;
         this.categoriaRepository = categoriaRepository;
+        this.specification = specification;
+        this.categoriaService = categoriaService;
     }
 
     public void criar(DespesaDto despesaDto){
@@ -53,12 +60,63 @@ public class DespesaService {
         var despesa = despesaMapper.toEntity(despesaDto);
         despesa.setMesCompetencia(despesa.getMesCompetencia().withDayOfMonth(1));
         criarVinculos(despesa);
-        despesaRepository.save(despesa);
+        if(isParcelada(despesaDto.getQtdeParcela())){
+            var despesaPai = repository.saveAndFlush(despesa);
+            criarParcelas(despesaPai);
+        }else{
+            repository.save(despesa);
+        }
+    }
+
+    private void criarParcelas(Despesa despesaPai){
+        var parcela = despesaPai.getNumParcela()+1;
+        var mesCompetencia = despesaPai.getMesCompetencia().plusMonths(1);
+        var vencimento = despesaPai.getDataVencimento().plusMonths(1);
+        for(;parcela <= despesaPai.getQtdeParcela();parcela++){
+            var despesa = new Despesa();
+            BeanUtils.copyProperties(despesaPai, despesa, "id", "uuid", "version", "mesCompetencia", "despesaPai", "categorias");
+            despesa.setDespesaPai(despesaPai);
+            despesa.setMesCompetencia(mesCompetencia);
+            despesa.setDataVencimento(vencimento);
+            despesa.setNumParcela(parcela);
+            despesa.setCategorias(despesaPai.getCategorias().stream().map(this::copiarDespesaCategoria).toList());
+            if(!vencimento.isBefore(LocalDate.now())){
+                despesa.setSituacao(TipoSituacao.EM_ABERTO);
+            }
+            criarVinculos(despesa);
+            repository.save(despesa);
+            mesCompetencia = mesCompetencia.plusMonths(1);
+            vencimento = vencimento.plusMonths(1);
+        }
+    }
+
+    private DespesaCategoria copiarDespesaCategoria(DespesaCategoria despesaCategoria){
+        var despesaCategoriaNew = new DespesaCategoria();
+        BeanUtils.copyProperties(despesaCategoria, despesaCategoriaNew, "categoria", "id", "uuid");
+        despesaCategoriaNew.setCategoria(copiarCategoria(despesaCategoria.getCategoria()));
+        return despesaCategoriaNew;
+    }
+
+    private Categoria copiarCategoria(Categoria categoria){
+        var categoriaNew = new Categoria();
+        BeanUtils.copyProperties(categoria, categoriaNew);
+        return categoriaNew;
+    }
+
+    private boolean isParcelada(int qtdeParcela){
+        return qtdeParcela > 0;
     }
 
     public Page<DespesaDto> listar(FiltroDespesaDto filtro, Pageable pageable){
-        var despesas = despesaRepository.findAll(filtro.toSpec(), pageable);
-        return despesas.map(despesaMapper::toDto).map(this::atualizarSituacaoVencido);
+        var despesas = repository.findAll(specification.toSpecification(filtro), pageable);
+        var despesasMap = despesas.map(despesaMapper::toDto).map(this::atualizarSituacaoVencido);
+        despesasMap.forEach(this::atualizarNomeCategoria);
+        return despesasMap;
+    }
+
+    private void atualizarNomeCategoria(DespesaDto despesaDto){
+        despesaDto.getCategorias()
+                .forEach(categoriaDespesa -> categoriaService.acrescentarNomeCategoriaPai(categoriaDespesa.getCategoria()));
     }
 
     private DespesaDto atualizarSituacaoVencido(DespesaDto despesa){
@@ -80,21 +138,45 @@ public class DespesaService {
     }
 
     private Despesa buscarById(UUID despesaId){
-        return despesaRepository.findDespesaByUuid(despesaId);
+        return repository.findDespesaByUuid(despesaId).orElseThrow();
     }
 
     public void atualizar(UUID idDespesa, DespesaDto despesaDto){
-        var despesaBanco = despesaRepository.findDespesaByUuid(idDespesa);
-        if(Objects.isNull(despesaBanco)){
+        var despesaBancoOpt = repository.findDespesaByUuid(idDespesa);
+        if(despesaBancoOpt.isEmpty()){
             throw new ValidacaoException(TipoErroDespesa.NAO_ENCONTRADA);
         }
+        var despesaBanco = despesaBancoOpt.get();
         validarNovaDespesa(despesaDto);
         var novosDados = despesaMapper.toEntity(despesaDto);
         novosDados.setMesCompetencia(novosDados.getMesCompetencia().withDayOfMonth(1));
-        BeanUtils.copyProperties(novosDados, despesaBanco, "categorias","deleted", "createdBy", "createdDate", "id", "version", "uuid");
-        criarVinculoMetodoPagamento(despesaBanco);
-        despesaRepository.saveAndFlush(despesaBanco);
-        despesaCategoriaService.atualizarDespesasCategoria(idDespesa, novosDados.getCategorias());
+        if(isParcelada(despesaDto.getQtdeParcela())){
+            despesaBanco.setSituacao(novosDados.getSituacao());
+            despesaBanco.setObservacao(novosDados.getObservacao());
+            repository.save(despesaBanco);
+        }else{
+            BeanUtils.copyProperties(novosDados, despesaBanco, "categorias","deleted", "createdBy", "createdDate", "id", "version", "uuid");
+            criarVinculoMetodoPagamento(despesaBanco);
+            repository.saveAndFlush(despesaBanco);
+            despesaCategoriaService.atualizarDespesasCategoria(idDespesa, novosDados.getCategorias());
+        }
+    }
+
+    @Transactional
+    public void pagar(UUID idDespesa){
+        var despesaBancoOpt = repository.findDespesaByUuid(idDespesa);
+        despesaBancoOpt.ifPresent(this::pagarDespesa);
+    }
+
+    @Transactional
+    public void pagarVarias(List<UUID> idsDespesa){
+        var despesaBancoList = repository.findDespesaByUuidIn(idsDespesa);
+        despesaBancoList.forEach(this::pagarDespesa);
+    }
+
+    private void pagarDespesa(Despesa despesa){
+        despesa.setSituacao(TipoSituacao.PAGO);
+        repository.save(despesa);
     }
 
     private void criarVinculos(Despesa despesa) {
@@ -123,14 +205,60 @@ public class DespesaService {
 
     private void validarNovaDespesa(DespesaDto despesaDto){
         if(StringUtils.isBlank(despesaDto.getDescricao())){
-            throw new ValidacaoException(TipoErroCategoria.DESCRICAO_NAO_INFORMADO);
+            throw new ValidacaoException(TipoErroDespesa.DESCRICAO_NAO_INFORMADO);
+        }
+
+        if(CollectionUtils.isEmpty(despesaDto.getCategorias())){
+            throw new ValidacaoException(TipoErroDespesa.CATEGORIA_NAO_INFORMADO);
+        }
+
+        if(isParcelada(despesaDto.getQtdeParcela())){
+            if(despesaDto.getNumParcela() > despesaDto.getQtdeParcela()){
+                throw new ValidacaoException(TipoErroDespesa.NUM_PARCELA_MAIOR_QUE_QTDE_PARCELA);
+            }
+        }
+
+    }
+
+    @Transactional
+    public void deletar(UUID idDespesa){
+        var despesa = repository.findDespesaByUuid(idDespesa);
+        despesa.ifPresent(this::deletarDespesa);
+    }
+
+    @Transactional
+    public void deletarVarios(List<UUID> idsDespesa){
+        var despesaList = repository.findDespesaByUuidIn(idsDespesa);
+        var despesasParaExcluir = despesaList.stream().filter(despesa -> despesa.getQtdeParcela() == 0);
+        despesasParaExcluir.forEach(this::deletarDespesa);
+    }
+
+    private void deletarDespesa(Despesa despesa){
+        if(isParcelada(despesa.getQtdeParcela())){
+            removerDespesaParcelada(despesa);
+        }else{
+            removerDespesaSimples(despesa);
         }
     }
 
-    public void deletar(UUID idDespesa){
-        var despesa = despesaRepository.findDespesaByUuid(idDespesa);
+    private void removerDespesaSimples(Despesa despesa){
+        despesa.getCategorias().forEach(despesaCategoriaService::remover);
         validarExclusao(despesa);
-        despesaRepository.delete(despesa);
+        despesa.setDeleted(Instant.now());
+        repository.saveAndFlush(despesa);
+    }
+
+    private void removerDespesaParcelada(Despesa despesa){
+        var isParcelaPai = Objects.isNull(despesa.getDespesaPai());
+        var idDespesaPai = isParcelaPai ? despesa.getId() : despesa.getDespesaPai().getId();
+        var parcelasFilhas = repository.findAllByDespesaPai_Id(idDespesaPai);
+        parcelasFilhas.forEach(this::removerDespesaSimples);
+        if(isParcelaPai){
+            removerDespesaSimples(despesa);
+        }else{
+            var despesaPai = repository.findById(idDespesaPai);
+            despesaPai.ifPresent(this::removerDespesaSimples);
+        }
     }
 
     private void validarExclusao(Despesa despesa){
@@ -146,7 +274,7 @@ public class DespesaService {
             competencia = competencia.withDayOfMonth(1);
         }
 
-        var despesas = despesaRepository.findAllByMesCompetencia(competencia);
+        var despesas = repository.findAllByMesCompetencia(competencia);
 
         var despesasPagas = despesas.stream()
                 .filter(despesa -> TipoSituacao.PAGO == despesa.getSituacao()).toList();
