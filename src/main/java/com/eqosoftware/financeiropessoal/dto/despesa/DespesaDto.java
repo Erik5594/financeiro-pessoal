@@ -1,6 +1,8 @@
 package com.eqosoftware.financeiropessoal.dto.despesa;
 
+import com.eqosoftware.financeiropessoal.domain.metodopagamento.TipoMetodoPagamento;
 import com.eqosoftware.financeiropessoal.dto.BaseDto;
+import com.eqosoftware.financeiropessoal.dto.recorrente.RecorrenteDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -34,10 +36,12 @@ public class DespesaDto extends BaseDto {
 
     private UUID idMetodoPagamento;
 
+    private TipoMetodoPagamento tipoMetodoPagamento;
+
     private int qtdeParcela;
 
     private int numParcela;
 
-    private boolean recorrente;
+    private RecorrenteDto recorrencia;
 
 }

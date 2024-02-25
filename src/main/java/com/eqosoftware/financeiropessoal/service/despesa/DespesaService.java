@@ -4,18 +4,21 @@ import com.eqosoftware.financeiropessoal.domain.categoria.Categoria;
 import com.eqosoftware.financeiropessoal.domain.despesa.Despesa;
 import com.eqosoftware.financeiropessoal.domain.despesa.DespesaCategoria;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroDespesa;
-import com.eqosoftware.financeiropessoal.dto.categoria.CategoriaDto;
+import com.eqosoftware.financeiropessoal.domain.metodopagamento.TipoMetodoPagamento;
+import com.eqosoftware.financeiropessoal.domain.recorrente.Recorrente;
 import com.eqosoftware.financeiropessoal.dto.dashboard.TotalizadorDespesaPorSituacao;
-import com.eqosoftware.financeiropessoal.dto.despesa.DespesaCategoriaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.FiltroDespesaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.TipoSituacao;
+import com.eqosoftware.financeiropessoal.dto.recorrente.PreviaRecorrenciaDto;
+import com.eqosoftware.financeiropessoal.dto.recorrente.RecorrenteDto;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
 import com.eqosoftware.financeiropessoal.repository.categoria.CategoriaRepository;
 import com.eqosoftware.financeiropessoal.repository.despesa.DespesaRepository;
 import com.eqosoftware.financeiropessoal.repository.metodopagamento.MetodoPagamentoRepository;
 import com.eqosoftware.financeiropessoal.service.categoria.CategoriaService;
 import com.eqosoftware.financeiropessoal.service.despesa.mapper.DespesaMapper;
+import com.eqosoftware.financeiropessoal.service.recorrente.RecorrenteService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,10 +45,13 @@ public class DespesaService {
     private final CategoriaRepository categoriaRepository;
     private final DespesaFiltroToSpecification specification;
     private final CategoriaService categoriaService;
+    private final RecorrenteService recorrenteService;
 
     @Autowired
     public DespesaService(DespesaCategoriaService despesaCategoriaService, DespesaRepository despesaRepository, DespesaMapper despesaMapper,
-                          MetodoPagamentoRepository metodoPagamentoRepository, CategoriaRepository categoriaRepository, DespesaFiltroToSpecification specification, CategoriaService categoriaService) {
+                          MetodoPagamentoRepository metodoPagamentoRepository, CategoriaRepository categoriaRepository,
+                          DespesaFiltroToSpecification specification, CategoriaService categoriaService,
+                          RecorrenteService recorrenteService) {
         this.despesaCategoriaService = despesaCategoriaService;
         this.repository = despesaRepository;
         this.despesaMapper = despesaMapper;
@@ -53,19 +59,60 @@ public class DespesaService {
         this.categoriaRepository = categoriaRepository;
         this.specification = specification;
         this.categoriaService = categoriaService;
+        this.recorrenteService = recorrenteService;
     }
 
+    @Transactional
     public void criar(DespesaDto despesaDto){
         validarNovaDespesa(despesaDto);
-        var despesa = despesaMapper.toEntity(despesaDto);
-        despesa.setMesCompetencia(despesa.getMesCompetencia().withDayOfMonth(1));
-        criarVinculos(despesa);
-        if(isParcelada(despesaDto.getQtdeParcela())){
-            var despesaPai = repository.saveAndFlush(despesa);
-            criarParcelas(despesaPai);
+        if(Objects.nonNull(despesaDto.getRecorrencia())){
+            criarDespesasRecorrentes(despesaDto);
         }else{
-            repository.save(despesa);
+            var despesa = despesaMapper.toEntity(despesaDto);
+            despesa.setMesCompetencia(despesa.getMesCompetencia().withDayOfMonth(1));
+            criarVinculos(despesa);
+            if(isParcelada(despesaDto.getQtdeParcela())){
+                var despesaPai = repository.saveAndFlush(despesa);
+                criarParcelas(despesaPai);
+            }else{
+                repository.save(despesa);
+            }
         }
+    }
+
+    private void criarDespesasRecorrentes(DespesaDto despesaDto){
+        var recorrencia = despesaDto.getRecorrencia();
+        validarCamposDaRecorrencia(recorrencia);
+        var recorrente = recorrenteService.criar(recorrencia);
+        criarDespesasRecorrentes(recorrencia.getDatasRecorrencias(), despesaDto, recorrente);
+    }
+
+    private void validarCamposDaRecorrencia(RecorrenteDto recorrenteDto){
+        if(Objects.isNull(recorrenteDto.getFrequencia())){
+            throw new ValidacaoException(TipoErroDespesa.FREQUENCIA_NAO_INFORMADA);
+        }
+
+        if(Objects.isNull(recorrenteDto.getDataLimite())){
+            throw new ValidacaoException(TipoErroDespesa.DATA_LIMITE_RECORRENCIA);
+        }
+
+        if(CollectionUtils.isEmpty(recorrenteDto.getDatasRecorrencias()) || recorrenteDto.getDatasRecorrencias().size() < 2){
+            throw new ValidacaoException(TipoErroDespesa.QTDE_RECORRENCIA_MENOR);
+        }
+    }
+
+    private void criarDespesasRecorrentes(List<PreviaRecorrenciaDto> datasRecorrentes, DespesaDto despesa, Recorrente recorrente){
+        datasRecorrentes.forEach(dataRecorrencia -> this.salvarDespesaByRecorrencia(dataRecorrencia, despesa, recorrente));
+    }
+
+    private void salvarDespesaByRecorrencia(PreviaRecorrenciaDto dataRecorrencia, DespesaDto despesaDto, Recorrente recorrente){
+        var despesa = despesaMapper.toEntity(despesaDto);
+        criarVinculos(despesa);
+        despesa.setMesCompetencia(dataRecorrencia.competencia());
+        despesa.setDataLancamento(dataRecorrencia.lancamento());
+        despesa.setDataVencimento(dataRecorrencia.vencimento());
+        despesa.setRecorrencia(recorrente);
+        repository.save(despesa);
     }
 
     private void criarParcelas(Despesa despesaPai){

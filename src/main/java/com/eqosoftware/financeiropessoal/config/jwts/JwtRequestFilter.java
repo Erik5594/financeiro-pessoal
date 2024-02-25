@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,7 @@ import java.io.IOException;
  * Created by erik on 28/01/2022.
  */
 
+@Slf4j
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
@@ -44,12 +46,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
-                System.out.println("Não foi possível obter o Token");
+                log.warn("Não foi possível obter o Token");
             } catch (ExpiredJwtException e) {
-                System.out.println("JWT Token está expirada");
+                log.warn("JWT Token está expirada");
             }
         } else {
-            logger.warn("O Token não começa com o Bearer String");
+            log.warn("O Token não começa com o Bearer String");
         }
 
         // Tendo o token, valide o.
@@ -58,7 +60,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 
 
-            if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
+            if (Boolean.TRUE.equals(jwtTokenUtil.validateToken(jwtToken, userDetails))) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

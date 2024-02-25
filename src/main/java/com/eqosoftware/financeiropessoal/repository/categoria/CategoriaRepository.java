@@ -17,7 +17,7 @@ public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
     Categoria findCategoriaByUuid(UUID uuid);
 
     @Query(value = "select * from categoria where upper(nome) = upper(:nome);", nativeQuery = true)
-    Categoria findByNome(@Param("nome") String nome);
+    List<Categoria> findByNome(@Param("nome") String nome);
 
     List<Categoria> findAllByCategoriaPaiIsNull();
 

@@ -6,7 +6,7 @@ import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {DespesaCategoriaMapper.class})
+@Mapper(componentModel = "spring", uses = {DespesaCategoriaMapper.class, RecorrenteMapper.class})
 public interface DespesaMapper {
 
     @Mapping(source = "id", target = "uuid")
@@ -17,6 +17,7 @@ public interface DespesaMapper {
     @Mapping(source = "uuid", target = "id")
     @InheritConfiguration(name = "toDto")
     @Mapping(source = "metodoPagamento.uuid", target = "idMetodoPagamento")
+    @Mapping(source = "metodoPagamento.tipoMetodoPagamento", target = "tipoMetodoPagamento")
     DespesaDto toDto(Despesa entity);
 
 }

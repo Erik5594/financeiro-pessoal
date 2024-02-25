@@ -38,5 +38,6 @@ public class Categoria extends BaseEntity {
 
     @OneToMany(mappedBy = "categoriaPai", cascade = { CascadeType.ALL }, orphanRemoval = true)
     private List<Categoria> categoriasFilha;
+    private int index;
 
 }

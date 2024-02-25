@@ -11,6 +11,7 @@ import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Comparator;
@@ -34,12 +35,21 @@ public class CategoriaService {
     @Autowired
     private EntityManager entityManager;
 
+    @Transactional
     public void criar(CategoriaDto categoriaDto){
         validarNovaCategoria(categoriaDto);
         Categoria categoria = categoriaMapper.toEntity(categoriaDto);
-        if(Objects.nonNull(categoria.getCategoriaPai())){
-            categoria.setCategoriaPai(buscarById(categoria.getCategoriaPai().getUuid()));
+        var index = 0;
+        if(Objects.nonNull(categoriaDto.getIdCategoriaPai())){
+            var categoriaPai = buscarById(categoria.getCategoriaPai().getUuid());
+            categoria.setCategoriaPai(categoriaPai);
+            index = categoriaPai.getIndex()+1;
+        }else{
+            categoria.setCategoriaPai(null);
         }
+        if(index > 3)
+            throw new ValidacaoException(TipoErroCategoria.INDEX_MAX);
+        categoria.setIndex(index);
         categoriaRepository.save(categoria);
     }
 
@@ -77,8 +87,11 @@ public class CategoriaService {
     }
 
     private boolean jaExiste(@NonNull final String nome, UUID idCategoriaPai){
-        Categoria categoria = categoriaRepository.findByNome(nome);
+        var categorias = categoriaRepository.findByNome(nome);
+        return categorias.stream().anyMatch(categoria -> this.jaExiste(categoria, idCategoriaPai));
+    }
 
+    private boolean jaExiste(Categoria categoria, UUID idCategoriaPai){
         if(Objects.isNull(categoria)){
             return false;
         }
@@ -90,11 +103,7 @@ public class CategoriaService {
             return false;
         }
 
-        if(Objects.nonNull(idCategoriaPai) && !idCategoriaPai.equals(categoria.getCategoriaPai().getUuid())){
-            return false;
-        }
-
-        return true;
+        return !Objects.nonNull(idCategoriaPai) || idCategoriaPai.equals(categoria.getCategoriaPai().getUuid());
     }
 
     private Categoria buscarById(UUID categoriaId){
@@ -111,7 +120,9 @@ public class CategoriaService {
 
     public CategoriaDto acrescentarNomeCategoriaPai(CategoriaDto categoriaDto){
         Categoria categoriaPai = categoriaRepository.findCategoriaByUuid(categoriaDto.getIdCategoriaPai());
-        categoriaDto.setNome(categoriaPai.getNome() +" >> "+ categoriaDto.getNome());
+        if(Objects.nonNull(categoriaPai)){
+            categoriaDto.setNome(categoriaPai.getNome() +" >> "+ categoriaDto.getNome());
+        }
         return categoriaDto;
     }
 

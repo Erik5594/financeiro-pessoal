@@ -21,6 +21,8 @@ public class MetodoPagamento extends BaseEntity {
     private String descricao;
     @Enumerated(EnumType.STRING)
     private TipoMetodoPagamento tipoMetodoPagamento;
+    @Enumerated(EnumType.STRING)
+    private TipoLancamentoCompetencia tipoLancamentoCompetencia;
     private Integer diaVencimento;
     private Integer diasParaFechamento;
     private Boolean padrao;

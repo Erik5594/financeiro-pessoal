@@ -2,6 +2,7 @@ package com.eqosoftware.financeiropessoal.domain.despesa;
 
 import com.eqosoftware.financeiropessoal.domain.common.RecoverableEntity;
 import com.eqosoftware.financeiropessoal.domain.metodopagamento.MetodoPagamento;
+import com.eqosoftware.financeiropessoal.domain.recorrente.Recorrente;
 import com.eqosoftware.financeiropessoal.dto.despesa.TipoSituacao;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -39,7 +40,9 @@ public class Despesa extends RecoverableEntity {
     private MetodoPagamento metodoPagamento;
     private int qtdeParcela;
     private int numParcela;
-    private boolean recorrente;
+    @ManyToOne
+    @JoinColumn(name = "id_recorrente")
+    private Recorrente recorrencia;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "despesa_pai")
     private Despesa despesaPai;

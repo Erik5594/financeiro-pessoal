@@ -21,5 +21,6 @@ public class CategoriaDto extends BaseDto {
     private UUID idCategoriaPai;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<UUID> idsCategoriasFilha;
+    private int index;
 
 }
