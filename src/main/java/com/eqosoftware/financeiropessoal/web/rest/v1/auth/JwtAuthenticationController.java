@@ -2,8 +2,7 @@ package com.eqosoftware.financeiropessoal.web.rest.v1.auth;
 
 import com.eqosoftware.financeiropessoal.config.jwts.JwtTokenUtil;
 import com.eqosoftware.financeiropessoal.config.security.AppUserDetailsService;
-import com.eqosoftware.financeiropessoal.domain.auth.GrupoAcesso;
-import com.eqosoftware.financeiropessoal.domain.auth.Usuario;
+import com.eqosoftware.financeiropessoal.config.security.UsuarioSistema;
 import com.eqosoftware.financeiropessoal.dto.grupoacesso.GrupoAcessoDto;
 import com.eqosoftware.financeiropessoal.dto.token.JwtResponseDto;
 import com.eqosoftware.financeiropessoal.dto.token.UsuarioDto;
@@ -44,38 +43,38 @@ public class JwtAuthenticationController {
     private UsuarioService usuarioService;
 
     @PostMapping(value = "/signup")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody UsuarioDto usuarioDto) {
+    public ResponseEntity<UsuarioDto> createAuthenticationToken(@RequestBody UsuarioDto usuarioDto) {
         UsuarioDto usuario = usuarioService.criarUsuario(usuarioDto);
         return ResponseEntity.ok(usuario);
     }
 
     @GetMapping("/usuarios")
-    public ResponseEntity<?> listar() {
+    public ResponseEntity<List<UsuarioDto>> listar() {
         List<UsuarioDto> usuarios = usuarioService.listarTodos();
         return ResponseEntity.ok(usuarios);
     }
 
     @GetMapping(value = "/role")
-    public ResponseEntity<?> listarRoles() {
+    public ResponseEntity<List<GrupoAcessoDto>> listarRoles() {
         List<GrupoAcessoDto> gruposAcesso = usuarioService.listarGrupoAcesso();
         return ResponseEntity.ok(gruposAcesso);
     }
 
     @PostMapping(value = "/role")
-    public ResponseEntity<?> createGrupoAcesso(@RequestBody GrupoAcessoDto grupoAcessoDto, HttpServletRequest request) {
+    public ResponseEntity<GrupoAcessoDto> createGrupoAcesso(@RequestBody GrupoAcessoDto grupoAcessoDto, HttpServletRequest request) {
         GrupoAcessoDto grupoAcesso = usuarioService.criarGrupoAcesso(grupoAcessoDto);
         return ResponseEntity.created(URI.create(request.getRequestURI() + "/" + grupoAcesso.getId())).body(grupoAcesso);
     }
 
     @PostMapping(value = "/signin")
-    public ResponseEntity<?> authenticationToken(@RequestBody UsuarioDto usuario) throws Exception {
+    public ResponseEntity<JwtResponseDto> authenticationToken(@RequestBody UsuarioDto usuario) throws Exception {
         String username = StringUtils.isBlank(usuario.getUsername()) ? usuario.getEmail():usuario.getUsername();
 
         authenticate(username, usuario.getSenha());
 
-        final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(username);
-        final String token = jwtTokenUtil.generateToken(userDetails);
+        final UsuarioSistema usuarioSistema = userDetailsService
+                .findByUsername(username);
+        final String token = jwtTokenUtil.generateToken(usuarioSistema);
         return ResponseEntity.ok(new JwtResponseDto(token));
     }
 

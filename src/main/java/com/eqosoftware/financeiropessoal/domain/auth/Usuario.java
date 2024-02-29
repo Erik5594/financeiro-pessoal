@@ -1,6 +1,7 @@
 package com.eqosoftware.financeiropessoal.domain.auth;
 
 import com.eqosoftware.financeiropessoal.domain.common.RecoverableEntity;
+import com.eqosoftware.financeiropessoal.domain.tenant.Tenant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +16,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @NoArgsConstructor
 @Entity
 @DynamicUpdate
-@Table
+@Table(schema = "public")
 public class Usuario extends RecoverableEntity {
 
     @Column(nullable = false, length = 100, updatable = false)
@@ -39,5 +40,9 @@ public class Usuario extends RecoverableEntity {
     @JoinColumn(name = "grupo_acesso_id", nullable = false)
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private GrupoAcesso grupoAcesso;
+
+    @ManyToOne
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
 }

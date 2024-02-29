@@ -38,6 +38,16 @@ public class AppUserDetailsService implements UserDetailsService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public UsuarioSistema findByUsername(String username) throws UsernameNotFoundException {
+        Usuario usuario = usuariosService.buscarByEmailOrUsername(username);
+        if(usuario != null){
+            return new UsuarioSistema(usuario, getGrupos(usuario));
+        }else{
+            throw new UsernameNotFoundException("Usuário não encontrado!");
+        }
+    }
+
     private Collection<? extends GrantedAuthority> getGrupos(Usuario usuario) {
         return usuario.getGrupoAcesso().getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_"+role.toUpperCase()))

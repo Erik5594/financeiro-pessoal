@@ -1,8 +1,10 @@
 package com.eqosoftware.financeiropessoal.config.jwts;
 
+import com.eqosoftware.financeiropessoal.config.security.UsuarioSistema;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -52,9 +55,14 @@ public class JwtTokenUtil {
     }
 
     //gera token para user
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UsuarioSistema usuarioSistema) {
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, userDetails.getUsername());
+        if(Objects.nonNull(usuarioSistema.getUsuario())
+                && Objects.nonNull(usuarioSistema.getUsuario().getTenant())
+                && StringUtils.isNotBlank(usuarioSistema.getUsuario().getTenant().getNomeSchema())){
+            claims.put("tenantId", usuarioSistema.getUsuario().getTenant().getNomeSchema());
+        }
+        return doGenerateToken(claims, usuarioSistema.getUsername());
     }
 
     //Cria o token e define tempo de expiração pra ele

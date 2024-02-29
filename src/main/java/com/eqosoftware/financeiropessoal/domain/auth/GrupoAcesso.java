@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @DynamicUpdate
-@Table
+@Table(schema = "public")
 public class GrupoAcesso extends AuditableEntity {
 
     @Column(nullable = false)
@@ -28,7 +28,7 @@ public class GrupoAcesso extends AuditableEntity {
     private boolean acessoCompleto;
 
     @ElementCollection
-    @CollectionTable(name = "grupo_acesso_roles", joinColumns = @JoinColumn(name = "id_grupo_acesso"))
+    @CollectionTable(name = "grupo_acesso_roles", schema = "public", joinColumns = @JoinColumn(name = "id_grupo_acesso"))
     @Column(name = "role")
     private List<String> roles;
 

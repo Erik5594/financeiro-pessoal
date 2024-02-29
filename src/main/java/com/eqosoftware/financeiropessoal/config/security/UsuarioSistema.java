@@ -1,6 +1,8 @@
 package com.eqosoftware.financeiropessoal.config.security;
 
 import com.eqosoftware.financeiropessoal.domain.auth.Usuario;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -11,10 +13,12 @@ import java.util.Collection;
  * Created by erik on 28/01/2022.
  */
 
+@Getter
 public class UsuarioSistema extends User {
 
     private static final long serialVersionUID = 1L;
 
+    @Setter
     private Usuario usuario;
 
 

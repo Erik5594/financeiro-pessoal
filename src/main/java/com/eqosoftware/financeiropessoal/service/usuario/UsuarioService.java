@@ -47,14 +47,20 @@ public class UsuarioService {
         return usuarioMapper.toDto(usuario);
     }
 
+    private void validarUsername(@NonNull final UsuarioDto usuarioDto){
+        if(StringUtils.isBlank(usuarioDto.getUsername())){
+            throw new ValidacaoException(TipoErroUsuario.USERNAME_NAO_INFORMADO);
+        }
+
+        if(jaExisteUsername(usuarioDto.getUsername())){
+            throw new ValidacaoException(TipoErroUsuario.USERNAME_JA_EXISTE);
+        }
+    }
+
     private void validarNovoUsuario(@NonNull final UsuarioDto usuarioDto){
 
         if(StringUtils.isBlank(usuarioDto.getNome())){
             throw new ValidacaoException(TipoErroUsuario.NOME_NAO_INFORMADO);
-        }
-
-        if(StringUtils.isBlank(usuarioDto.getUsername())){
-            throw new ValidacaoException(TipoErroUsuario.USERNAME_NAO_INFORMADO);
         }
 
         if(StringUtils.isBlank(usuarioDto.getEmail())){
@@ -77,9 +83,6 @@ public class UsuarioService {
             throw new ValidacaoException(TipoErroUsuario.EMAIL_JA_EXISTE);
         }
 
-        if(jaExisteUsername(usuarioDto.getUsername())){
-            throw new ValidacaoException(TipoErroUsuario.USERNAME_JA_EXISTE);
-        }
     }
 
     private boolean jaExisteEmail(@NonNull final String email){
@@ -96,7 +99,7 @@ public class UsuarioService {
         usuario.setAtivo(true);
         usuario.setBloqueado(false);
         usuario.setCreatedBy("system");
-        usuario.setGrupoAcesso(grupoAcessoRepository.findById(1l).orElse(null));
+        usuario.setGrupoAcesso(grupoAcessoRepository.findById(1L).orElse(null));
         return usuario;
     }
 
