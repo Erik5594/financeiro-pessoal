@@ -102,6 +102,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-core -->
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>4.24.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -171,6 +177,34 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.liquibase</groupId>
+                    <artifactId>liquibase-maven-plugin</artifactId>
+                    <version>4.25.1</version>
+                    <configuration>
+                        <!--set values for Liquibase properties and settings
+                        for example, the location of a properties file to use-->
+                        <promptOnNonLocalDatabase>false</promptOnNonLocalDatabase>
+                        <propertyFileWillOverride>true</propertyFileWillOverride>
+                        <propertyFile>src/main/resources/liquibase.properties</propertyFile>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>generate-changelog</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>generateChangeLog</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.postgresql</groupId>
+                            <artifactId>postgresql</artifactId>
+                            <version>42.5.1</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>

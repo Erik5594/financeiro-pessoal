@@ -19,6 +19,7 @@ public class AuditingService implements AuditorAware<String> {
 
     public static String getCurrentUserLogin() {
         var usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return Objects.isNull(usuarioLogado) ? "":((UsuarioSistema) usuarioLogado).getUsername();
+        return Objects.isNull(usuarioLogado) || "anonymousUser".equals(usuarioLogado) ?
+                "":((UsuarioSistema) usuarioLogado).getUsername();
     }
 }

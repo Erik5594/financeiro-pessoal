@@ -6,6 +6,7 @@ import com.eqosoftware.financeiropessoal.config.security.UsuarioSistema;
 import com.eqosoftware.financeiropessoal.dto.grupoacesso.GrupoAcessoDto;
 import com.eqosoftware.financeiropessoal.dto.token.JwtResponseDto;
 import com.eqosoftware.financeiropessoal.dto.token.UsuarioDto;
+import com.eqosoftware.financeiropessoal.service.tenant.TenantService;
 import com.eqosoftware.financeiropessoal.service.usuario.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +16,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -41,11 +41,16 @@ public class JwtAuthenticationController {
 
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private TenantService tenantService;
 
     @PostMapping(value = "/signup")
-    public ResponseEntity<UsuarioDto> createAuthenticationToken(@RequestBody UsuarioDto usuarioDto) {
+    public ResponseEntity<JwtResponseDto> createAuthenticationToken(@RequestBody UsuarioDto usuarioDto) throws Exception {
+        var senha = usuarioDto.getSenha();
         UsuarioDto usuario = usuarioService.criarUsuario(usuarioDto);
-        return ResponseEntity.ok(usuario);
+        usuario.setSenha(senha);
+        tenantService.atualizarSchemas();
+        return autenticar(usuario);
     }
 
     @GetMapping("/usuarios")
@@ -68,6 +73,10 @@ public class JwtAuthenticationController {
 
     @PostMapping(value = "/signin")
     public ResponseEntity<JwtResponseDto> authenticationToken(@RequestBody UsuarioDto usuario) throws Exception {
+        return autenticar(usuario);
+    }
+
+    private ResponseEntity<JwtResponseDto> autenticar(UsuarioDto usuario) throws Exception {
         String username = StringUtils.isBlank(usuario.getUsername()) ? usuario.getEmail():usuario.getUsername();
 
         authenticate(username, usuario.getSenha());

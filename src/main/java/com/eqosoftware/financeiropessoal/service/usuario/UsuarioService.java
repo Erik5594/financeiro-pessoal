@@ -9,21 +9,24 @@ import com.eqosoftware.financeiropessoal.dto.token.UsuarioDto;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
 import com.eqosoftware.financeiropessoal.repository.usuario.GrupoAcessoRepository;
 import com.eqosoftware.financeiropessoal.repository.usuario.UsuarioRepository;
+import com.eqosoftware.financeiropessoal.service.tenant.TenantService;
 import com.eqosoftware.financeiropessoal.service.usuario.mapper.GrupoAcessoMapper;
 import com.eqosoftware.financeiropessoal.service.usuario.mapper.UsuarioMapper;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by erik on 28/01/2022.
  */
 
+@Slf4j
 @Service
 public class UsuarioService {
 
@@ -37,14 +40,23 @@ public class UsuarioService {
     private UsuarioMapper usuarioMapper;
     @Autowired
     private GrupoAcessoMapper grupoAcessoMapper;
+    @Autowired
+    private TenantService tenantService;
+
     public Usuario buscarByEmailOrUsername(String valor){
         return usuarioRepository.findUsuarioByEmailOrUsername(valor ,valor);
     }
 
+    @Transactional
     public UsuarioDto criarUsuario(UsuarioDto usuarioDto){
         validarNovoUsuario(usuarioDto);
-        Usuario usuario = usuarioRepository.save(mapperToEntityValuesDefaults(usuarioDto));
-        return usuarioMapper.toDto(usuario);
+        var tenant = tenantService.criarTenant(usuarioDto.getUsername());
+        var grupoAcesso = grupoAcessoRepository.findById(1L).orElse(null);
+        var usuario = mapperToEntityValuesDefaults(usuarioDto);
+        usuario.setGrupoAcesso(grupoAcesso);
+        usuario.setCreatedBy(usuario.getUsername());
+        usuario.setTenant(tenant);
+        return usuarioMapper.toDto(usuarioRepository.saveAndFlush(usuario));
     }
 
     private void validarUsername(@NonNull final UsuarioDto usuarioDto){
@@ -58,6 +70,8 @@ public class UsuarioService {
     }
 
     private void validarNovoUsuario(@NonNull final UsuarioDto usuarioDto){
+
+        validarUsername(usuarioDto);
 
         if(StringUtils.isBlank(usuarioDto.getNome())){
             throw new ValidacaoException(TipoErroUsuario.NOME_NAO_INFORMADO);
@@ -136,7 +150,7 @@ public class UsuarioService {
 
     public List<GrupoAcessoDto> listarGrupoAcesso(){
         return grupoAcessoRepository.findAll().stream()
-                .map(grupoAcessoMapper::toDto).collect(Collectors.toList());
+                .map(grupoAcessoMapper::toDto).toList();
     }
 
     public List<UsuarioDto> listarTodos(){
