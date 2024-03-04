@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by erik on 28/01/2022.
@@ -45,6 +46,10 @@ public class UsuarioService {
 
     public Usuario buscarByEmailOrUsername(String valor){
         return usuarioRepository.findUsuarioByEmailOrUsername(valor ,valor);
+    }
+
+    public Usuario buscarByUUID(UUID uuid){
+        return usuarioRepository.findByUuid(uuid).orElseThrow();
     }
 
     @Transactional

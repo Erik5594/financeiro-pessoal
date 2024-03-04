@@ -57,10 +57,12 @@ public class JwtTokenUtil {
     //gera token para user
     public String generateToken(UsuarioSistema usuarioSistema) {
         Map<String, Object> claims = new HashMap<>();
-        if(Objects.nonNull(usuarioSistema.getUsuario())
-                && Objects.nonNull(usuarioSistema.getUsuario().getTenant())
-                && StringUtils.isNotBlank(usuarioSistema.getUsuario().getTenant().getNomeSchema())){
-            claims.put("tenantId", usuarioSistema.getUsuario().getTenant().getNomeSchema());
+        if (Objects.nonNull(usuarioSistema.getUsuario())) {
+            claims.put("guid", usuarioSistema.getUsuario().getUuid().toString());
+            if (Objects.nonNull(usuarioSistema.getUsuario().getTenant())
+                    && StringUtils.isNotBlank(usuarioSistema.getUsuario().getTenant().getNomeSchema())) {
+                claims.put("tenantId", usuarioSistema.getUsuario().getTenant().getNomeSchema());
+            }
         }
         return doGenerateToken(claims, usuarioSistema.getUsername());
     }

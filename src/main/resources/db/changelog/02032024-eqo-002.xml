@@ -1,0 +1,97 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="Erik (generated)" id="1709555186205-1">
+        <createTable tableName="grupo_acesso">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="grupo_acesso_pkey"/>
+            </column>
+            <column name="uuid" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="INTEGER"/>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="last_modified_by" type="VARCHAR(255)"/>
+            <column name="last_modified_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="acesso_completo" type="BOOLEAN"/>
+            <column name="nome" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Erik (generated)" id="1709555186205-2">
+        <createTable tableName="tenant">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tenant_pkey"/>
+            </column>
+            <column name="nome_schema" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Erik (generated)" id="1709555186205-3">
+        <createTable tableName="usuario">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="usuario_pkey"/>
+            </column>
+            <column name="uuid" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="INTEGER"/>
+            <column name="created_by" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="last_modified_by" type="VARCHAR(255)"/>
+            <column name="last_modified_date" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="deleted" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="ativo" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bloqueado" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nome" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="senha" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="grupo_acesso_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Erik (generated)" id="1709555186205-4">
+        <addUniqueConstraint columnNames="uuid" constraintName="uk_8nuh1cx7ubr5sbaxraegl4063" tableName="grupo_acesso"/>
+    </changeSet>
+    <changeSet author="Erik (generated)" id="1709555186205-5">
+        <addUniqueConstraint columnNames="uuid" constraintName="uk_l8q1tlaiyb03eemicl6qgvddu" tableName="usuario"/>
+    </changeSet>
+    <changeSet author="Erik (generated)" id="1709555186205-6">
+        <createTable tableName="grupo_acesso_roles">
+            <column name="id_grupo_acesso" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Erik (generated)" id="1709555186205-7">
+        <addForeignKeyConstraint baseColumnNames="id_grupo_acesso" baseTableName="grupo_acesso_roles" constraintName="fk2iefaaksss09tk6317kmsn0pn" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="grupo_acesso" validate="true"/>
+    </changeSet>
+    <changeSet author="Erik (generated)" id="1709555186205-8">
+        <addForeignKeyConstraint baseColumnNames="grupo_acesso_id" baseTableName="usuario" constraintName="fk7nkr6bnb8oq099r7gbuqpikwn" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="grupo_acesso" validate="true"/>
+    </changeSet>
+    <changeSet author="Erik (generated)" id="1709555186205-9">
+        <addForeignKeyConstraint baseColumnNames="tenant_id" baseTableName="usuario" constraintName="fka10giac3ef9545ra7eyhmn4q1" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="tenant" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

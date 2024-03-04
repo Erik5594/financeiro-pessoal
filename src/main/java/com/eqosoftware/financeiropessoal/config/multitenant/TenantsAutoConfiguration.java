@@ -17,6 +17,8 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -50,8 +52,6 @@ public class TenantsAutoConfiguration {
         }
         multiTenantSpringLiquibase.setSchemas(schemas);
         multiTenantSpringLiquibase.setChangeLog("classpath:db/changelog-master.xml");
-        multiTenantSpringLiquibase.setDatabaseChangeLogLockTable("database_changelog_lock");
-        multiTenantSpringLiquibase.setDatabaseChangeLogTable("database_changelog");
         multiTenantSpringLiquibase.setContexts(liquibaseProperties.getContexts());
 
         log.debug("Configuring contexts liquibase - " + liquibaseProperties.getContexts());

@@ -6,6 +6,7 @@ import com.eqosoftware.financeiropessoal.config.security.UsuarioSistema;
 import com.eqosoftware.financeiropessoal.dto.grupoacesso.GrupoAcessoDto;
 import com.eqosoftware.financeiropessoal.dto.token.JwtResponseDto;
 import com.eqosoftware.financeiropessoal.dto.token.UsuarioDto;
+import com.eqosoftware.financeiropessoal.service.perfil.PerfilService;
 import com.eqosoftware.financeiropessoal.service.tenant.TenantService;
 import com.eqosoftware.financeiropessoal.service.usuario.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +43,8 @@ public class JwtAuthenticationController {
     private UsuarioService usuarioService;
     @Autowired
     private TenantService tenantService;
+    @Autowired
+    private PerfilService perfilService;
 
     @PostMapping(value = "/signup")
     public ResponseEntity<JwtResponseDto> createAuthenticationToken(@RequestBody UsuarioDto usuarioDto) throws Exception {
@@ -50,6 +52,7 @@ public class JwtAuthenticationController {
         UsuarioDto usuario = usuarioService.criarUsuario(usuarioDto);
         usuario.setSenha(senha);
         tenantService.atualizarSchemas();
+        perfilService.criarParaNovoUsuario(usuario);
         return autenticar(usuario);
     }
 

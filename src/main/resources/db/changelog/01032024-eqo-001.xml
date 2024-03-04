@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet author="Liquibase (generated)" id="1709332968175-1">
+    <changeSet author="Erik (generated)" id="1709396412502-1">
         <createTable tableName="categoria">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="categoria_pkey"/>
@@ -20,7 +20,7 @@
             <column name="categoria_pai" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-2">
+    <changeSet author="Erik (generated)" id="1709396412502-2">
         <createTable tableName="despesa">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="despesa_pkey"/>
@@ -63,7 +63,7 @@
             <column name="id_recorrente" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-3">
+    <changeSet author="Erik (generated)" id="1709396412502-3">
         <createTable tableName="despesa_categoria">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="despesa_categoria_pkey"/>
@@ -87,7 +87,7 @@
             <column name="id_despesa" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-4">
+    <changeSet author="Erik (generated)" id="1709396412502-4">
         <createTable tableName="metodo_pagamento">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="metodo_pagamento_pkey"/>
@@ -107,7 +107,7 @@
             <column name="tipo_metodo_pagamento" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-5">
+    <changeSet author="Erik (generated)" id="1709396412502-5">
         <createTable tableName="recorrente">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="recorrente_pkey"/>
@@ -120,37 +120,37 @@
             <column name="frequencia" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-6">
+    <changeSet author="Erik (generated)" id="1709396412502-6">
         <addUniqueConstraint columnNames="uuid" constraintName="uk_a64llir059wa8bgw4s43thhfk" tableName="categoria"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-7">
+    <changeSet author="Erik (generated)" id="1709396412502-7">
         <addUniqueConstraint columnNames="uuid" constraintName="uk_ed8a0t12w80ppd432f8kdwls1" tableName="despesa"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-8">
+    <changeSet author="Erik (generated)" id="1709396412502-8">
         <addUniqueConstraint columnNames="uuid" constraintName="uk_59jokm80f2hgs10ohumtx8dfh" tableName="despesa_categoria"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-9">
+    <changeSet author="Erik (generated)" id="1709396412502-9">
         <addUniqueConstraint columnNames="uuid" constraintName="uk_ps2l8h5qmfcxcmp5nrdrjptyk" tableName="metodo_pagamento"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-10">
+    <changeSet author="Erik (generated)" id="1709396412502-10">
         <addUniqueConstraint columnNames="uuid" constraintName="uk_lgqxxb33vyl6heogj82xp2e8l" tableName="recorrente"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-11">
+    <changeSet author="Erik (generated)" id="1709396412502-11">
         <addForeignKeyConstraint baseColumnNames="despesa_pai" baseTableName="despesa" constraintName="fk3w87l3lipwvu9jn6kmxnatryg" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="despesa" validate="true"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-12">
+    <changeSet author="Erik (generated)" id="1709396412502-12">
         <addForeignKeyConstraint baseColumnNames="categoria_pai" baseTableName="categoria" constraintName="fk7u10tgoeuatxujx5jggklqe27" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="categoria" validate="true"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-13">
+    <changeSet author="Erik (generated)" id="1709396412502-13">
         <addForeignKeyConstraint baseColumnNames="id_despesa" baseTableName="despesa_categoria" constraintName="fk9r9ojqbxhmm2y0jawp4b4vki8" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="despesa" validate="true"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-14">
+    <changeSet author="Erik (generated)" id="1709396412502-14">
         <addForeignKeyConstraint baseColumnNames="categoria_id" baseTableName="despesa_categoria" constraintName="fketeh0eby77gvvko2v7fvdliux" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="categoria" validate="true"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-15">
+    <changeSet author="Erik (generated)" id="1709396412502-15">
         <addForeignKeyConstraint baseColumnNames="id_recorrente" baseTableName="despesa" constraintName="fkimnyshxpsi58uojgo1imtwe8g" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="recorrente" validate="true"/>
     </changeSet>
-    <changeSet author="Liquibase (generated)" id="1709332968175-16">
+    <changeSet author="Erik (generated)" id="1709396412502-16">
         <addForeignKeyConstraint baseColumnNames="id_metodo_pagamento" baseTableName="despesa" constraintName="fksiaxkcawqiha4ct3vrb3vpa3w" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="metodo_pagamento" validate="true"/>
     </changeSet>
 </databaseChangeLog>
