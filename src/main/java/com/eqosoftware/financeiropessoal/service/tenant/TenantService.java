@@ -34,7 +34,6 @@ public class TenantService {
     public Tenant criarTenant(String username){
         var datatimeString = LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmss"));
         var nomeSchema = String.format(NOME_NEW_TENANT, username.replaceAll(EXPRESSAO_APENAS_LETRAS_E_NUMEROS, ""), datatimeString);
-        criarSchema(nomeSchema);
         var tenant = new Tenant(nomeSchema);
         tenant = repository.saveAndFlush(tenant);
         criarSchema(nomeSchema);
@@ -49,10 +48,7 @@ public class TenantService {
     public void atualizarSchemas(){
         try {
             var tenants = getAllTenants();
-            var schemas = multiTenantSpringLiquibase.getSchemas();
-            var schemasNaoExistente = tenants.stream().filter(tenant -> !schemas.contains(tenant)).collect(Collectors.toList());
-            schemas.addAll(schemasNaoExistente);
-            multiTenantSpringLiquibase.setSchemas(schemas);
+            multiTenantSpringLiquibase.setSchemas(tenants);
             multiTenantSpringLiquibase.afterPropertiesSet();
         } catch (Exception e) {
             log.error("Ocorreu um erro ao executar o liquibase.", e);
@@ -61,7 +57,7 @@ public class TenantService {
 
     private List<String> getAllTenants(){
         var tenants = repository.findAll();
-        return tenants.stream().map(Tenant::getNomeSchema).collect(Collectors.toList());
+        return tenants.stream().map(Tenant::getNomeSchema).toList();
     }
 
 }

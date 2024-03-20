@@ -20,10 +20,12 @@ public interface UsuarioMapper {
 
     @Mapping(source = "id", target = "uuid")
     @Mapping(target = "id", ignore = true)
+    @Mapping(source = "tenant", target = "tenant.nomeSchema")
     Usuario toEntity(UsuarioDto source);
 
     @Mapping(target = "senha", ignore = true)
     @Mapping(source = "uuid", target = "id")
+    @Mapping(source = "tenant.nomeSchema", target = "tenant")
     UsuarioDto toDto(Usuario source);
 
     @IterableMapping(elementTargetType = UsuarioDto.class)

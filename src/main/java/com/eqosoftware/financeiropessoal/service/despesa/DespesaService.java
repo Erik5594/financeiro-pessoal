@@ -4,7 +4,6 @@ import com.eqosoftware.financeiropessoal.domain.categoria.Categoria;
 import com.eqosoftware.financeiropessoal.domain.despesa.Despesa;
 import com.eqosoftware.financeiropessoal.domain.despesa.DespesaCategoria;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroDespesa;
-import com.eqosoftware.financeiropessoal.domain.metodopagamento.TipoMetodoPagamento;
 import com.eqosoftware.financeiropessoal.domain.recorrente.Recorrente;
 import com.eqosoftware.financeiropessoal.dto.dashboard.TotalizadorDespesaPorSituacao;
 import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;

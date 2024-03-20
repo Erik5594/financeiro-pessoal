@@ -30,6 +30,6 @@
         <addUniqueConstraint columnNames="uuid" constraintName="uk_bvkfwa4mv34aui43t8gmcy4dt" tableName="perfil"/>
     </changeSet>
     <changeSet author="Erik (generated)" id="1709559417776-3">
-        <addForeignKeyConstraint baseColumnNames="usuario_id" baseTableName="perfil" constraintName="fkno01a8iut56nipcu6qdnxgeg5" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="usuario" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="usuario_id" baseTableName="perfil" constraintName="fkno01a8iut56nipcu6qdnxgeg5" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="usuario" referencedTableSchemaName="public" validate="true"/>
     </changeSet>
 </databaseChangeLog>

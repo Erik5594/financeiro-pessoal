@@ -24,5 +24,6 @@ public class Perfil extends RecoverableEntity {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
     private String descricao;
+    private String urlImagemPerfil;
 
 }

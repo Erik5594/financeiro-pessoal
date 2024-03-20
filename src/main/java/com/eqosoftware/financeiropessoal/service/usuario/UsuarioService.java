@@ -1,5 +1,6 @@
 package com.eqosoftware.financeiropessoal.service.usuario;
 
+import com.eqosoftware.financeiropessoal.config.security.UsuarioSistema;
 import com.eqosoftware.financeiropessoal.domain.auth.GrupoAcesso;
 import com.eqosoftware.financeiropessoal.domain.auth.Usuario;
 import com.eqosoftware.financeiropessoal.domain.erro.TipoErroGrupoAcesso;
@@ -12,14 +13,23 @@ import com.eqosoftware.financeiropessoal.repository.usuario.UsuarioRepository;
 import com.eqosoftware.financeiropessoal.service.tenant.TenantService;
 import com.eqosoftware.financeiropessoal.service.usuario.mapper.GrupoAcessoMapper;
 import com.eqosoftware.financeiropessoal.service.usuario.mapper.UsuarioMapper;
+import com.eqosoftware.financeiropessoal.util.IgnoresPropertiesUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,13 +53,11 @@ public class UsuarioService {
     private GrupoAcessoMapper grupoAcessoMapper;
     @Autowired
     private TenantService tenantService;
+    @Autowired @Lazy
+    private AuthenticationManager authenticationManager;
 
     public Usuario buscarByEmailOrUsername(String valor){
         return usuarioRepository.findUsuarioByEmailOrUsername(valor ,valor);
-    }
-
-    public Usuario buscarByUUID(UUID uuid){
-        return usuarioRepository.findByUuid(uuid).orElseThrow();
     }
 
     @Transactional
@@ -62,6 +70,17 @@ public class UsuarioService {
         usuario.setCreatedBy(usuario.getUsername());
         usuario.setTenant(tenant);
         return usuarioMapper.toDto(usuarioRepository.saveAndFlush(usuario));
+    }
+
+    @Transactional
+    public UsuarioDto atualizar(UsuarioDto usuarioDto){
+        var usuarioSistema =(UsuarioSistema) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var novosDados = usuarioMapper.toEntity(usuarioDto);
+        var usuario = usuarioRepository.findUsuarioByEmailOrUsername(null, usuarioSistema.getUsuario().getUsername());
+        BeanUtils.copyProperties(novosDados, usuario,
+                IgnoresPropertiesUtils.ignorePropertiesAllBase("username", "senha", "ativo", "bloqueado", "grupoAcesso", "tenant"));
+        var usuarioAtualizado = usuarioRepository.save(usuario);
+        return usuarioMapper.toDto(usuarioAtualizado);
     }
 
     private void validarUsername(@NonNull final UsuarioDto usuarioDto){
@@ -160,6 +179,41 @@ public class UsuarioService {
 
     public List<UsuarioDto> listarTodos(){
         return usuarioMapper.toDto(usuarioRepository.findAll());
+    }
+
+    public UsuarioDto atualizarSenha(String atual, String nova){
+        var usuarioSistema = (UsuarioSistema) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        validarSenhaAtual(atual, usuarioSistema);
+        var usuario = usuarioMapper.toDto(atualizarSenhaBanco(nova, usuarioSistema));
+        usuario.setSenha(nova);
+        return usuario;
+    }
+
+    private Usuario atualizarSenhaBanco(String nova, UsuarioSistema usuarioSistema) {
+        var usuario = this.buscarByEmailOrUsername(usuarioSistema.getUsername());
+        usuario.setSenha(passwordEncoder.encode(nova));
+        return usuarioRepository.save(usuario);
+    }
+
+    private void validarSenhaAtual(String atual, UsuarioSistema usuarioSistema) {
+        try{
+            authenticate(usuarioSistema.getUsername(), atual);
+        } catch (Exception e){
+            log.error("Erro ao validar senha atual", e);
+            if(e instanceof BadCredentialsException) {
+                throw new ValidacaoException("Senha atual não confere!", 400);
+            }else{
+                throw new ValidacaoException("Ocorreu um erro ao validar senha atual!", 500);
+            }
+        }
+    }
+
+    public void authenticate(String username, String password) throws Exception {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        } catch (DisabledException e) {
+            throw new Exception("USER_DISABLED", e);
+        }
     }
 
 }

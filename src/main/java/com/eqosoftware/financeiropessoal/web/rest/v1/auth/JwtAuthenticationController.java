@@ -6,16 +6,13 @@ import com.eqosoftware.financeiropessoal.config.security.UsuarioSistema;
 import com.eqosoftware.financeiropessoal.dto.grupoacesso.GrupoAcessoDto;
 import com.eqosoftware.financeiropessoal.dto.token.JwtResponseDto;
 import com.eqosoftware.financeiropessoal.dto.token.UsuarioDto;
-import com.eqosoftware.financeiropessoal.service.perfil.PerfilService;
+import com.eqosoftware.financeiropessoal.dto.usuario.AtualizaSenhaDto;
 import com.eqosoftware.financeiropessoal.service.tenant.TenantService;
 import com.eqosoftware.financeiropessoal.service.usuario.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -31,9 +28,6 @@ import java.util.List;
 public class JwtAuthenticationController {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
     @Autowired
@@ -43,16 +37,14 @@ public class JwtAuthenticationController {
     private UsuarioService usuarioService;
     @Autowired
     private TenantService tenantService;
-    @Autowired
-    private PerfilService perfilService;
 
     @PostMapping(value = "/signup")
     public ResponseEntity<JwtResponseDto> createAuthenticationToken(@RequestBody UsuarioDto usuarioDto) throws Exception {
         var senha = usuarioDto.getSenha();
         UsuarioDto usuario = usuarioService.criarUsuario(usuarioDto);
         usuario.setSenha(senha);
+        Thread.sleep(1000);
         tenantService.atualizarSchemas();
-        perfilService.criarParaNovoUsuario(usuario);
         return autenticar(usuario);
     }
 
@@ -60,6 +52,12 @@ public class JwtAuthenticationController {
     public ResponseEntity<List<UsuarioDto>> listar() {
         List<UsuarioDto> usuarios = usuarioService.listarTodos();
         return ResponseEntity.ok(usuarios);
+    }
+
+    @PutMapping(value = "/atualizar-senha")
+    public ResponseEntity<JwtResponseDto> atualizarSenha(@RequestBody AtualizaSenhaDto atualizaSenhaDto) throws Exception {
+        var usuario = usuarioService.atualizarSenha(atualizaSenhaDto.atual(), atualizaSenhaDto.nova());
+        return autenticar(usuario);
     }
 
     @GetMapping(value = "/role")
@@ -82,20 +80,12 @@ public class JwtAuthenticationController {
     private ResponseEntity<JwtResponseDto> autenticar(UsuarioDto usuario) throws Exception {
         String username = StringUtils.isBlank(usuario.getUsername()) ? usuario.getEmail():usuario.getUsername();
 
-        authenticate(username, usuario.getSenha());
+        usuarioService.authenticate(username, usuario.getSenha());
 
         final UsuarioSistema usuarioSistema = userDetailsService
                 .findByUsername(username);
         final String token = jwtTokenUtil.generateToken(usuarioSistema);
         return ResponseEntity.ok(new JwtResponseDto(token));
-    }
-
-    private void authenticate(String username, String password) throws Exception {
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-        } catch (DisabledException e) {
-            throw new Exception("USER_DISABLED", e);
-        }
     }
 
 }

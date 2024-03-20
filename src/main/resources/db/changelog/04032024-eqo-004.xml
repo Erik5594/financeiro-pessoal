@@ -1,0 +1,15 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="Erik (generated)" id="1709559417777-1">
+        <sql>
+            INSERT INTO public.grupo_acesso (id, uuid,"version",created_by,created_date,last_modified_by,last_modified_date,acesso_completo,nome)
+            SELECT 1, '5a44b101-a697-4abd-ae53-8de31c0d61b0',0,'system','2023-05-23 12:45:04.648666-03',NULL,'2023-05-23 12:45:04.648666-03',true,'master'
+            WHERE NOT EXISTS (SELECT 1 FROM public.grupo_acesso WHERE id = 1);
+       </sql>
+        <sql>
+            INSERT INTO public.grupo_acesso_roles (id_grupo_acesso,"role")
+            SELECT 1,'ADMINISTRADOR'
+            WHERE NOT EXISTS (SELECT 1 FROM public.grupo_acesso_roles WHERE id_grupo_acesso = 1);
+        </sql>
+    </changeSet>
+</databaseChangeLog>
