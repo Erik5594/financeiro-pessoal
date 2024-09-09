@@ -9,6 +9,7 @@ public enum TipoErroUsuario implements Erro {
     USERNAME_JA_EXISTE("Username já cadastrado. Informe outro ou realize o login.", 400),
     EMAIL_JA_EXISTE("E-mail já cadastrado. Informe outro ou realize o login", 400),
     SENHA_CARACTERES_MINIMO_NAO_ATINGIDO("Quantidade mínima de caracteres não atingida. Mínimo[6].", 400),
+    USUARIO_NAO_ENCONTRADO("Usuário não encontrado.", 404),
     EMAIL_INVALIDO("O e-mail informado é inválido.", 400);
 
     private String descricaoErro;

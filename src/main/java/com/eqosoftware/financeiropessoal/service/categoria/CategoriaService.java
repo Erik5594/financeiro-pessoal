@@ -118,12 +118,25 @@ public class CategoriaService {
         }
     }
 
+    @Transactional
     public CategoriaDto acrescentarNomeCategoriaPai(CategoriaDto categoriaDto){
-        Categoria categoriaPai = categoriaRepository.findCategoriaByUuid(categoriaDto.getIdCategoriaPai());
-        if(Objects.nonNull(categoriaPai)){
-            categoriaDto.setNome(categoriaPai.getNome() +" >> "+ categoriaDto.getNome());
+        if(Objects.nonNull(categoriaDto.getIdCategoriaPai())){
+            var categoriaPai = categoriaRepository.findCategoriaByUuid(categoriaDto.getIdCategoriaPai());
+            if(Objects.nonNull(categoriaPai)){
+                var formatacao = " >> %s >> %s";
+                var nomeCompleto = acrescentarNomeCategoriaPai(categoriaPai, formatacao.formatted(categoriaPai.getNome(), categoriaDto.getNome()));
+                categoriaDto.setNome(nomeCompleto);
+            }
         }
         return categoriaDto;
+    }
+
+    private String acrescentarNomeCategoriaPai(Categoria categoria, String parte){
+        if(Objects.nonNull(categoria.getCategoriaPai())){
+            var categoriaPai = categoriaRepository.findCategoriaByUuid(categoria.getCategoriaPai().getUuid());
+            return acrescentarNomeCategoriaPai(categoriaPai, " >> "+ categoriaPai.getNome() + parte);
+        }
+        return parte.substring(4);
     }
 
     private List<CategoriaDto> buscarComFiltro(FiltroDto filtro){

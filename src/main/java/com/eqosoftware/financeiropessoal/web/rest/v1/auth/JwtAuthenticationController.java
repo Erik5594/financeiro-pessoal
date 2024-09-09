@@ -77,6 +77,12 @@ public class JwtAuthenticationController {
         return autenticar(usuario);
     }
 
+    @PutMapping(value = "/resetar-password")
+    public ResponseEntity<Void> resetarPassword(@RequestParam String username) throws Exception {
+        usuarioService.resetarSenha(username);
+        return ResponseEntity.ok().build();
+    }
+
     private ResponseEntity<JwtResponseDto> autenticar(UsuarioDto usuario) throws Exception {
         String username = StringUtils.isBlank(usuario.getUsername()) ? usuario.getEmail():usuario.getUsername();
 

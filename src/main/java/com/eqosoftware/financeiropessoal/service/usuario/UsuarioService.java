@@ -29,9 +29,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
 
 /**
  * Created by erik on 28/01/2022.
@@ -184,13 +183,20 @@ public class UsuarioService {
     public UsuarioDto atualizarSenha(String atual, String nova){
         var usuarioSistema = (UsuarioSistema) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         validarSenhaAtual(atual, usuarioSistema);
-        var usuario = usuarioMapper.toDto(atualizarSenhaBanco(nova, usuarioSistema));
+        var usuario = usuarioMapper.toDto(atualizarSenhaBanco(nova, usuarioSistema.getUsername()));
         usuario.setSenha(nova);
         return usuario;
     }
 
-    private Usuario atualizarSenhaBanco(String nova, UsuarioSistema usuarioSistema) {
-        var usuario = this.buscarByEmailOrUsername(usuarioSistema.getUsername());
+    public void resetarSenha(String username){
+        atualizarSenhaBanco("1234", username);
+    }
+
+    private Usuario atualizarSenhaBanco(String nova, String username) {
+        var usuario = this.buscarByEmailOrUsername(username);
+        if(Objects.isNull(usuario)){
+            throw new ValidacaoException(TipoErroUsuario.USUARIO_NAO_ENCONTRADO);
+        }
         usuario.setSenha(passwordEncoder.encode(nova));
         return usuarioRepository.save(usuario);
     }
