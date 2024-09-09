@@ -8,6 +8,7 @@ import com.eqosoftware.financeiropessoal.domain.metodopagamento.TipoMetodoPagame
 import com.eqosoftware.financeiropessoal.dto.pagamento.DatasResponse;
 import com.eqosoftware.financeiropessoal.dto.pagamento.MetodoPagamentoDto;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
+import com.eqosoftware.financeiropessoal.repository.despesa.DespesaRepository;
 import com.eqosoftware.financeiropessoal.repository.metodopagamento.MetodoPagamentoRepository;
 import com.eqosoftware.financeiropessoal.service.metodopagamento.mapper.MetodoPagamentoMapper;
 import lombok.NonNull;
@@ -29,11 +30,13 @@ public class MetodoPagamentoService {
 
     private final MetodoPagamentoMapper mapper;
     private final MetodoPagamentoRepository repository;
+    private final DespesaRepository despesaRepository;
 
     @Autowired
-    public MetodoPagamentoService(MetodoPagamentoMapper mapper, MetodoPagamentoRepository repository) {
+    public MetodoPagamentoService(MetodoPagamentoMapper mapper, MetodoPagamentoRepository repository, DespesaRepository despesaRepository) {
         this.mapper = mapper;
         this.repository = repository;
+        this.despesaRepository = despesaRepository;
     }
 
     @Transactional
@@ -66,7 +69,8 @@ public class MetodoPagamentoService {
                 repository.findAllByNomeIgnoreCaseContains(nome, pageable);
         metodosPagamento.forEach(this::corrigirTipoMetodoPagamento);
         metodosPagamento.forEach(this::corrigirTipoLancamentoCompetencia);
-        return metodosPagamento.map(mapper::toDto);
+        var metodosPagamentoDto =  metodosPagamento.map(mapper::toDto);
+        return metodosPagamentoDto.map(this::ajustaDespesaVinculada);
     }
 
     @Transactional
@@ -253,6 +257,17 @@ public class MetodoPagamentoService {
                 return dataVencimento.with(TemporalAdjusters.firstDayOfMonth());
             }
         }
+    }
+
+    private MetodoPagamentoDto ajustaDespesaVinculada(MetodoPagamentoDto metodoPagamentoDto){
+        var contemDespesa = contemDespesaVinculada(metodoPagamentoDto.id());
+        return metodoPagamentoDto.withDespesaVinculada(contemDespesa);
+    }
+
+    private boolean contemDespesaVinculada(UUID metodoPagamentoId){
+        return !despesaRepository
+                .findAllByMetodoPagamento_Uuid( metodoPagamentoId)
+                .isEmpty();
     }
 
 }

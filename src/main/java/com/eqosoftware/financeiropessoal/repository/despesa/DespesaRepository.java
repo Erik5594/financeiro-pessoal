@@ -20,4 +20,6 @@ public interface DespesaRepository extends JpaRepository<Despesa, Long>, JpaSpec
 
     List<Despesa> findAllByDespesaPai_Id(Long idDespesaPai);
 
+    List<Despesa> findAllByMetodoPagamento_Uuid(UUID uuid);
+
 }
