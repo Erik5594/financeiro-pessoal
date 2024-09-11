@@ -95,6 +95,18 @@ public class MetodoPagamentoService {
         repository.save(metodoPagamentoBanco);
     }
 
+    @Transactional(readOnly = true)
+    public boolean houveAlteracaoDiaVencimentoOuDiasFechamento(UUID idMetodoPagamento, MetodoPagamentoDto metodoPagamentoDto){
+        var metodoPagamentoBancoOpt = repository.findByUuid(idMetodoPagamento);
+        if(metodoPagamentoBancoOpt.isEmpty()){
+            throw new ValidacaoException(TipoErroDespesa.NAO_ENCONTRADA);
+        }
+        var metodoPagamentoBanco = metodoPagamentoBancoOpt.get();
+        return TipoMetodoPagamento.CARTAO_CREDITO.equals(metodoPagamentoDto.tipoMetodoPagamento())
+                && (!metodoPagamentoDto.diaVencimento().equals(metodoPagamentoBanco.getDiaVencimento())
+                || !metodoPagamentoDto.diasParaFechamento().equals(metodoPagamentoBanco.getDiasParaFechamento()));
+    }
+
     private void validarNovoMetodoPagamento(MetodoPagamentoDto metodoPagamentoDto) {
         this.validarMetodoPagamento(metodoPagamentoDto);
         if(jaExiste(metodoPagamentoDto.nome())){

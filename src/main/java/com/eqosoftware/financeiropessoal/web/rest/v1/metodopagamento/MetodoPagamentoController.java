@@ -3,6 +3,7 @@ package com.eqosoftware.financeiropessoal.web.rest.v1.metodopagamento;
 import com.eqosoftware.financeiropessoal.domain.metodopagamento.TipoLancamentoCompetencia;
 import com.eqosoftware.financeiropessoal.dto.pagamento.DatasResponse;
 import com.eqosoftware.financeiropessoal.dto.pagamento.MetodoPagamentoDto;
+import com.eqosoftware.financeiropessoal.service.despesa.DespesaService;
 import com.eqosoftware.financeiropessoal.service.metodopagamento.MetodoPagamentoService;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ public class MetodoPagamentoController {
 
     @Autowired
     private MetodoPagamentoService metodoPagamentoService;
+    @Autowired
+    private DespesaService despesaService;
 
     @GetMapping
     public ResponseEntity<Page<MetodoPagamentoDto>> listarMetodosPagamento(@RequestParam(value = "nome", required = false) String nome, Pageable page) {
@@ -40,7 +43,12 @@ public class MetodoPagamentoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> editar(@PathVariable String id, @RequestBody MetodoPagamentoDto metodoPagamentoDto) {
+        var alterouData = metodoPagamentoService.houveAlteracaoDiaVencimentoOuDiasFechamento(UUID.fromString(id), metodoPagamentoDto);
         metodoPagamentoService.atualizar(UUID.fromString(id), metodoPagamentoDto);
+        if(alterouData){
+            var datas = metodoPagamentoService.calcularDataVencimentoECompetencia(LocalDate.now(), UUID.fromString(id));
+            despesaService.atualizarDespesasEmAberto(UUID.fromString(id), datas); //atualiza as despesas em aberto de uma forma de pagamento;
+        }
         return ResponseEntity.ok().build();
     }
 

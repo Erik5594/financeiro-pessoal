@@ -1,6 +1,7 @@
 package com.eqosoftware.financeiropessoal.repository.despesa;
 
 import com.eqosoftware.financeiropessoal.domain.despesa.Despesa;
+import com.eqosoftware.financeiropessoal.dto.despesa.TipoSituacao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -21,5 +22,7 @@ public interface DespesaRepository extends JpaRepository<Despesa, Long>, JpaSpec
     List<Despesa> findAllByDespesaPai_Id(Long idDespesaPai);
 
     List<Despesa> findAllByMetodoPagamento_Uuid(UUID uuid);
+
+    List<Despesa> findAllByMetodoPagamento_UuidAndSituacaoEquals(UUID uuid, TipoSituacao situacao);
 
 }

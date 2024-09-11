@@ -9,6 +9,7 @@ import com.eqosoftware.financeiropessoal.dto.dashboard.TotalizadorDespesaPorSitu
 import com.eqosoftware.financeiropessoal.dto.despesa.DespesaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.FiltroDespesaDto;
 import com.eqosoftware.financeiropessoal.dto.despesa.TipoSituacao;
+import com.eqosoftware.financeiropessoal.dto.pagamento.DatasResponse;
 import com.eqosoftware.financeiropessoal.dto.recorrente.PreviaRecorrenciaDto;
 import com.eqosoftware.financeiropessoal.dto.recorrente.RecorrenteDto;
 import com.eqosoftware.financeiropessoal.exceptions.ValidacaoException;
@@ -18,6 +19,7 @@ import com.eqosoftware.financeiropessoal.repository.metodopagamento.MetodoPagame
 import com.eqosoftware.financeiropessoal.service.categoria.CategoriaService;
 import com.eqosoftware.financeiropessoal.service.despesa.mapper.DespesaMapper;
 import com.eqosoftware.financeiropessoal.service.recorrente.RecorrenteService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class DespesaService {
 
@@ -355,4 +358,17 @@ public class DespesaService {
         );
     }
 
+    public void atualizarDespesasEmAberto(UUID uuid, DatasResponse datas) {
+        var despesasEmAberto = repository.findAllByMetodoPagamento_UuidAndSituacaoEquals(uuid, TipoSituacao.EM_ABERTO);
+        despesasEmAberto.stream()
+                .filter(despesa -> !despesa.getDataVencimento().isBefore(LocalDate.now()))
+                .peek(despesa -> {
+                    log.info("Atualizando datas da despesa (Atual): (Despeas-Id {}, Descrição: {}, Data Vencimento: {}, Data Competência: {})", despesa.getUuid(), despesa.getDescricao(), despesa.getDataVencimento(), despesa.getMesCompetencia());
+                    despesa.setDataVencimento(datas.dataVencimento());
+                    despesa.setMesCompetencia(datas.dataCompetencia());
+                }).forEach(despesa -> {
+                    log.info("Atualizando datas da despesa (Novo): (Despeas-Id {}, Descrição: {}, Data Vencimento: {}, Data Competência: {})", despesa.getUuid(), despesa.getDescricao(), despesa.getDataVencimento(), despesa.getMesCompetencia());
+                    repository.save(despesa);
+                });
+    }
 }
